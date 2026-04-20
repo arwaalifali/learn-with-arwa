@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learn with Arwa | Surah</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Lato:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="surah-page">
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <a class="logo" href="index.html" aria-label="Learn with Arwa home">
+          <img class="logo-image" src="assets/logo.png" alt="Learn with Arwa logo" />
+        </a>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a class="active" href="quran.html">Quran</a></li>
+          <li><a href="hadith.html">Hadith</a></li>
+          <li><a href="duas.html">Duas</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container">
+          <a class="back-link" href="quran.html">← Back to all Surahs</a>
+          <section id="surah-viewer" class="surah-viewer" aria-live="polite"></section>
+        </div>
+      </section>
+    </main>
+
+    <div class="follow-dock" role="region" aria-label="Recitation controls">
+      <div class="follow-dock-actions">
+        <label class="reciter-picker-label" for="reciter-select">Reciter</label>
+        <select id="reciter-select" class="reciter-select" aria-label="Choose reciter">
+          <option value="husri">Mahmoud Al-Husri</option>
+          <option value="abdulbasit">Abdul Basit Abdul Samad</option>
+          <option value="sudais">Sudais</option>
+          <option value="shureim">Shureim</option>
+          <option value="ghamdi">Saad Al-Ghamdi</option>
+          <option value="shatri">Abu Bakr Al-Shatri</option>
+        </select>
+        <button id="toggle-follow-recitation" class="ayah-play" type="button">Play Follow Mode</button>
+        <button id="stop-follow-recitation" class="ayah-play" type="button">Stop</button>
+      </div>
+      <p id="follow-dock-status" class="muted follow-dock-status">Follow mode is ready.</p>
+    </div>
+
+    <footer class="site-footer dark-section">
+      <div class="container footer-grid">
+        <div>
+          <a class="logo" href="index.html" aria-label="Learn with Arwa home">
+            <img class="logo-image" src="assets/logo.png" alt="Learn with Arwa logo" />
+          </a>
+        </div>
+        <div class="footer-links">
+          <h3>Quick Links</h3>
+          <a href="index.html">Home</a>
+          <a href="quran.html">Quran</a>
+          <a href="hadith.html">Hadith</a>
+          <a href="duas.html">Duas</a>
+          <a href="about.html">About</a>
+        </div>
+        <div>
+          <p class="footer-quote">رَبِّ زِدْنِي عِلْمًا</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span id="year"></span> Learn with Arwa. All rights reserved.
+      </div>
+    </footer>
+
+    <script type="module" src="scripts/common.js"></script>
+    <script type="module" src="scripts/surah.js"></script>
+  </body>
+</html>
