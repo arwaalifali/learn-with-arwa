@@ -32,6 +32,24 @@
       <section class="section">
         <div class="container">
           <a class="back-link" href="quran.html">← Back to all Surahs</a>
+
+          <!-- Reciter Picker (always visible, above content) -->
+          <div class="reciter-picker-box">
+            <p class="reciter-picker-title">Choose Reciter</p>
+            <div class="reciter-buttons" id="reciter-buttons">
+              <button class="reciter-btn active" data-reciter="husri">Mahmoud Al-Husri</button>
+              <button class="reciter-btn" data-reciter="abdulbasit">Abdul Basit Abdul Samad</button>
+              <button class="reciter-btn" data-reciter="sudais">Sudais</button>
+              <button class="reciter-btn" data-reciter="shureim">Shureim</button>
+              <button class="reciter-btn" data-reciter="ghamdi">Saad Al-Ghamdi</button>
+              <button class="reciter-btn" data-reciter="shatri">Abu Bakr Al-Shatri</button>
+              <button class="reciter-btn" data-reciter="muaiqly">Maher Al-Muaiqly</button>
+              <button class="reciter-btn" data-reciter="minshawi">Muhammad Al-Minshawi</button>
+              <button class="reciter-btn" data-reciter="afasy">Mishary Al-Afasy</button>
+              <button class="reciter-btn" data-reciter="omarhisham">Omar Hisham Al-Arabi</button>
+            </div>
+          </div>
+
           <section id="surah-viewer" class="surah-viewer" aria-live="polite"></section>
         </div>
       </section>
@@ -39,15 +57,6 @@
 
     <div class="follow-dock" role="region" aria-label="Recitation controls">
       <div class="follow-dock-actions">
-        <label class="reciter-picker-label" for="reciter-select">Reciter</label>
-        <select id="reciter-select" class="reciter-select" aria-label="Choose reciter">
-          <option value="husri">Mahmoud Al-Husri</option>
-          <option value="abdulbasit">Abdul Basit Abdul Samad</option>
-          <option value="sudais">Sudais</option>
-          <option value="shureim">Shureim</option>
-          <option value="ghamdi">Saad Al-Ghamdi</option>
-          <option value="shatri">Abu Bakr Al-Shatri</option>
-        </select>
         <button id="toggle-follow-recitation" class="ayah-play" type="button">Play Follow Mode</button>
         <button id="stop-follow-recitation" class="ayah-play" type="button">Stop</button>
       </div>
@@ -78,7 +87,43 @@
       </div>
     </footer>
 
+    <!-- Hidden select kept for JS compatibility -->
+    <select id="reciter-select" style="display:none;">
+      <option value="husri">Mahmoud Al-Husri</option>
+      <option value="abdulbasit">Abdul Basit Abdul Samad</option>
+      <option value="sudais">Sudais</option>
+      <option value="shureim">Shureim</option>
+      <option value="ghamdi">Saad Al-Ghamdi</option>
+      <option value="shatri">Abu Bakr Al-Shatri</option>
+      <option value="muaiqly">Maher Al-Muaiqly</option>
+      <option value="minshawi">Muhammad Al-Minshawi</option>
+      <option value="afasy">Mishary Al-Afasy</option>
+      <option value="omarhisham">Omar Hisham Al-Arabi</option>
+    </select>
+
     <script type="module" src="scripts/common.js"></script>
     <script type="module" src="scripts/surah.js"></script>
+    <script>
+      // Wire reciter buttons to the hidden select
+      const btns = document.querySelectorAll('.reciter-btn');
+      const sel = document.getElementById('reciter-select');
+      btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          btns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          sel.value = btn.dataset.reciter;
+          sel.dispatchEvent(new Event('change'));
+        });
+      });
+
+      // Restore saved reciter on load
+      const saved = localStorage.getItem('selected-reciter');
+      if (saved) {
+        btns.forEach(b => {
+          b.classList.remove('active');
+          if (b.dataset.reciter === saved) b.classList.add('active');
+        });
+      }
+    </script>
   </body>
 </html>

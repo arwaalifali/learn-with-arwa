@@ -36,6 +36,26 @@ const RECITERS = {
     fullBaseUrl: "https://server11.mp3quran.net/shatri",
     ayahFolder: "Abu_Bakr_Ash-Shaatree_64kbps",
   },
+  muaiqly: {
+    label: "Maher Al-Muaiqly",
+    fullBaseUrl: "https://server12.mp3quran.net/maher",
+    ayahFolder: "Maher_AlMuaiqly_64kbps",
+  },
+  minshawi: {
+    label: "Muhammad Al-Minshawi",
+    fullBaseUrl: "https://server10.mp3quran.net/minsh",
+    ayahFolder: "Minshawi_16kbps",
+  },
+  afasy: {
+    label: "Mishary Al-Afasy",
+    fullBaseUrl: "https://server8.mp3quran.net/afs",
+    ayahFolder: "Mishary_Rashid_Alafasy_128kbps",
+  },
+  omarhisham: {
+    label: "Omar Hisham Al-Arabi",
+    fullBaseUrl: "https://server8.mp3quran.net/omar_hisham",
+    ayahFolder: "Omar_Hisham_Al-Arabi_128kbps",
+  },
 };
 const DEFAULT_RECITER = "husri";
 
