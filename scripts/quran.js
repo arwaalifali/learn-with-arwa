@@ -116,9 +116,40 @@ const surahs = [
 ];
 
 const surahGrid = document.getElementById("surah-grid");
+const searchInput = document.getElementById("surah-search");
+const searchEmpty = document.getElementById("surah-search-empty");
 
 if (!surahGrid) {
   throw new Error("Quran page elements not found.");
+}
+
+function filterSurahs(query) {
+  const normalizedQuery = query.trim().toLowerCase();
+  const arabicQuery = query.trim();
+  let visibleCount = 0;
+
+  surahGrid.querySelectorAll(".surah-card").forEach((card) => {
+    const number = card.dataset.number ?? "";
+    const english = card.dataset.english ?? "";
+    const arabic = card.dataset.arabic ?? "";
+
+    const matches =
+      !normalizedQuery ||
+      number.includes(normalizedQuery) ||
+      english.includes(normalizedQuery) ||
+      arabic.includes(arabicQuery);
+
+    card.classList.toggle("is-hidden", !matches);
+
+    if (matches) {
+      visibleCount += 1;
+    }
+  });
+
+  if (searchEmpty) {
+    const showEmpty = normalizedQuery.length > 0 && visibleCount === 0;
+    searchEmpty.hidden = !showEmpty;
+  }
 }
 
 surahs.forEach((surah) => {
@@ -126,6 +157,9 @@ surahs.forEach((surah) => {
   card.className = "surah-card";
   card.href = `surah.html?id=${surah[0]}`;
   card.setAttribute("aria-label", `Open Surah ${surah[2]}`);
+  card.dataset.number = String(surah[0]);
+  card.dataset.english = surah[2].toLowerCase();
+  card.dataset.arabic = surah[1];
   card.innerHTML = `
     <h3>${surah[0]}. ${surah[2]}</h3>
     <p class="arabic">${surah[1]}</p>
@@ -133,3 +167,17 @@ surahs.forEach((surah) => {
   `;
   surahGrid.appendChild(card);
 });
+
+if (searchInput) {
+  searchInput.addEventListener("input", (event) => {
+    filterSurahs(event.target.value);
+  });
+
+  searchInput.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      searchInput.value = "";
+      filterSurahs("");
+      searchInput.blur();
+    }
+  });
+}

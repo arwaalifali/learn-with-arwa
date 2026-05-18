@@ -16,7 +16,7 @@
     <header class="site-header">
       <div class="container nav-wrap">
         <a class="logo" href="index.html" aria-label="Learn with Arwa home">
-          <img class="logo-image" src="assets/logo.png" alt="Learn with Arwa logo" />
+          <img class="logo-image" src="assets/logo.png?v=6" alt="Learn with Arwa logo" />
         </a>
         <ul class="nav-links">
           <li><a href="index.html">Home</a></li>
@@ -39,6 +39,34 @@
       <section class="section">
         <div class="container">
           <p class="eyebrow">All Surahs</p>
+          <div class="quran-search-wrap">
+            <label class="visually-hidden" for="surah-search">Search Surahs</label>
+            <div class="quran-search">
+              <svg
+                class="quran-search-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="M20 20 16.5 16.5" />
+              </svg>
+              <input
+                type="search"
+                id="surah-search"
+                class="quran-search-input"
+                placeholder="Search by number, English, or Arabic name…"
+                autocomplete="off"
+                enterkeyhint="search"
+              />
+            </div>
+          </div>
+          <p id="surah-search-empty" class="quran-search-empty" hidden>No results found</p>
           <div id="surah-grid" class="quran-grid"></div>
         </div>
       </section>
@@ -48,7 +76,7 @@
       <div class="container footer-grid">
         <div>
           <a class="logo" href="index.html" aria-label="Learn with Arwa home">
-            <img class="logo-image" src="assets/logo.png" alt="Learn with Arwa logo" />
+            <img class="logo-image" src="assets/logo.png?v=6" alt="Learn with Arwa logo" />
           </a>
         </div>
         <div class="footer-links">

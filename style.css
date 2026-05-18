@@ -151,13 +151,20 @@
   
   .logo-image {
     display: block;
-    width: clamp(200px, 24vw, 330px);
+    width: clamp(180px, 22vw, 280px);
     height: auto;
     object-fit: contain;
+    background: transparent;
   }
-  
+
+  .site-header .logo-image {
+    filter: none;
+  }
+
   .site-footer .logo-image {
-    width: clamp(200px, 30vw, 340px);
+    width: clamp(180px, 26vw, 300px);
+    filter: invert(1);
+    opacity: 0.92;
   }
   
   .hero {
@@ -398,10 +405,80 @@
     margin-bottom: 0.3rem;
   }
   
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .quran-search-wrap {
+    margin-bottom: 1.25rem;
+  }
+
+  .quran-search {
+    position: relative;
+    max-width: 32rem;
+  }
+
+  .quran-search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    width: 1.125rem;
+    height: 1.125rem;
+    color: var(--muted);
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+
+  .quran-search-input {
+    width: 100%;
+    padding: 0.75rem 1.1rem 0.75rem 2.75rem;
+    border: 1px solid #bfa28c;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ink);
+    font-family: "Lato", sans-serif;
+    font-size: 1rem;
+    line-height: 1.4;
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+  }
+
+  .quran-search-input::placeholder {
+    color: var(--muted);
+  }
+
+  .quran-search-input:focus {
+    border-color: #a98b76;
+    box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.2);
+  }
+
+  .quran-search-empty {
+    margin: 0 0 1rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .quran-search-empty[hidden] {
+    display: none;
+  }
+
   .quran-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1rem;
+  }
+
+  .surah-card.is-hidden {
+    display: none;
   }
   
   .surah-card {
@@ -491,19 +568,163 @@
     border-color: var(--mocha);
   }
   
-  /* ── Follow Dock ── */
+  /* ── Follow Dock (player) ── */
   .follow-dock {
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
     z-index: 30;
-    background: rgba(255, 255, 255, 0.96);
-    border-top: 1px solid rgba(169, 139, 118, 0.35);
-    box-shadow: 0 -8px 18px rgba(31, 26, 22, 0.08);
-    padding: 0.6rem 0.9rem 0.55rem;
+    background: #fff;
+    border-top: 1px solid #bfa28c;
+    box-shadow: 0 -8px 24px rgba(31, 26, 22, 0.1);
+    padding: 0.65rem 0;
   }
-  
+
+  .follow-dock-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem 1.25rem;
+  }
+
+  .follow-dock-info {
+    flex: 1 1 10rem;
+    min-width: 0;
+  }
+
+  .follow-dock-info-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .follow-dock-surah {
+    display: block;
+    font-family: "Playfair Display", serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #a98b76;
+    line-height: 1.25;
+  }
+
+  .follow-dock-ayah-line {
+    display: block;
+    font-size: 0.88rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .follow-dock-transport {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    flex: 0 0 auto;
+    font-variant-emoji: text;
+    -webkit-font-feature-settings: "liga" off;
+    font-feature-settings: "liga" off;
+  }
+
+  .follow-dock-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+    font-size: 1rem;
+    vertical-align: middle;
+    width: 2.5rem;
+    height: 2.5rem;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+    border: 1px solid #a98b76;
+    border-radius: 50%;
+    background-color: #fff;
+    color: #a98b76;
+    -webkit-text-fill-color: #a98b76;
+    font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "Lato", sans-serif;
+    cursor: pointer;
+    transition: background-color var(--transition), color var(--transition), border-color var(--transition),
+      -webkit-text-fill-color var(--transition), transform 0.15s ease;
+  }
+
+  .follow-dock-btn:hover,
+  .follow-dock-btn:focus-visible {
+    background-color: #a98b76;
+    color: #fff;
+    -webkit-text-fill-color: #fff;
+    border-color: #a98b76;
+    outline: none;
+  }
+
+  .follow-dock-btn:active {
+    transform: scale(0.96);
+  }
+
+  .follow-dock-btn--primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+    vertical-align: middle;
+    width: 3.25rem;
+    height: 3.25rem;
+    background-color: #a98b76;
+    color: #fff;
+    -webkit-text-fill-color: #fff;
+    border-color: #a98b76;
+  }
+
+  .follow-dock-btn--primary:hover,
+  .follow-dock-btn--primary:focus-visible {
+    background: #95735f;
+    border-color: #95735f;
+    color: #fff;
+    -webkit-text-fill-color: #fff;
+  }
+
+  .follow-dock-reciter-wrap {
+    flex: 1 1 11rem;
+    min-width: 10rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .follow-dock-reciter-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #a98b76;
+  }
+
+  .follow-dock-select {
+    width: 100%;
+    border: 1px solid #bfa28c;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+    padding: 0.45rem 0.65rem;
+    font: inherit;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: border-color var(--transition), box-shadow var(--transition);
+  }
+
+  .follow-dock-select:focus {
+    outline: none;
+    border-color: #a98b76;
+    box-shadow: 0 0 0 3px rgba(169, 139, 118, 0.25);
+  }
+
   .follow-dock-actions {
     display: flex;
     flex-wrap: wrap;
@@ -528,9 +749,13 @@
   }
   
   .follow-dock-status {
-    margin: 0.4rem 0 0;
+    margin: 0.5rem 0 0;
     text-align: center;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
+    max-width: 48rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 0.75rem;
   }
   
   .surah-meta {
@@ -567,7 +792,49 @@
   .recitation-hint {
     margin-top: 0.65rem;
   }
-  
+
+  .bismillah-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+    margin: 1.5rem 0 1.35rem;
+    padding: 0.45rem 0.5rem;
+    text-align: center;
+  }
+
+  .bismillah-rule {
+    flex: 1 1 2rem;
+    min-width: 1.25rem;
+    height: 1px;
+    align-self: center;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(169, 139, 118, 0.35) 12%,
+      rgba(169, 139, 118, 0.85) 50%,
+      rgba(169, 139, 118, 0.35) 88%,
+      transparent
+    );
+    border-radius: 1px;
+  }
+
+  .bismillah-text {
+    flex: 0 1 auto;
+    font-family: "Amiri", serif;
+    font-size: clamp(1.45rem, 3.8vw, 2.15rem);
+    font-weight: 400;
+    color: #a98b76;
+    line-height: 1.55;
+    letter-spacing: 0.03em;
+  }
+
+  .bismillah-header.is-active-bismillah {
+    background: rgba(169, 139, 118, 0.14);
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 1px rgba(169, 139, 118, 0.22);
+  }
+
   .recitation-actions {
     display: flex;
     flex-wrap: wrap;
@@ -590,6 +857,30 @@
     border-color: rgba(169, 139, 118, 0.5);
     border-radius: 10px;
     padding-inline: 0.75rem;
+  }
+
+  .surah-viewer .ayah-clickable {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .surah-viewer .ayah-clickable:hover {
+    background: rgba(169, 139, 118, 0.08);
+  }
+
+  .surah-viewer .ayah-clickable:hover::after {
+    content: "▶ Read from here";
+    position: absolute;
+    left: 0.65rem;
+    right: auto;
+    top: calc(1.52rem + 0.45rem + 0.2rem);
+    bottom: auto;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--mocha);
+    opacity: 0.92;
+    pointer-events: none;
+    white-space: nowrap;
   }
   
   .ayah-ar {

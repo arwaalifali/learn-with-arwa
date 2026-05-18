@@ -1,8 +1,11 @@
 const viewer = document.getElementById("surah-viewer");
 let followState = null;
-const toggleFollowBtn = document.getElementById("toggle-follow-recitation");
-const stopFollowBtn = document.getElementById("stop-follow-recitation");
+let followDockHandlersBound = false;
+let surahViewerAyahClickBound = false;
+const followPlayPauseBtn = document.getElementById("follow-btn-play-pause");
 const followDockStatus = document.getElementById("follow-dock-status");
+const followDockSurahEl = document.getElementById("follow-dock-surah");
+const followDockAyahEl = document.getElementById("follow-dock-ayah");
 const reciterSelect = document.getElementById("reciter-select");
 
 const RECITERS = {
@@ -59,6 +62,91 @@ const RECITERS = {
 };
 const DEFAULT_RECITER = "husri";
 
+const BISMILLAH_HEADER_HTML = "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ";
+
+/** Exact Bismillah form to strip when it matches Ayah 1 text (plus Uthmani API variant via regex below). */
+const BISMILLAH_AYAH_PREFIX_PLAIN = "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ";
+
+function surahShowsStandaloneBismillah(surahId) {
+  return surahId !== 1 && surahId !== 9;
+}
+
+function surahUsesBismillahAudioIntro(surahId) {
+  return surahId !== 1 && surahId !== 9;
+}
+
+function getBismillahIntroUrl(reciterKey) {
+  return getAyahRecitationUrl(1, 1, reciterKey);
+}
+
+function stripLeadingBismillahFromArabic(ar) {
+  let t = (ar || "").trim();
+  if (!t.startsWith("بِسْمِ")) return ar;
+
+  if (t.startsWith(BISMILLAH_AYAH_PREFIX_PLAIN)) {
+    const rest = t.slice(BISMILLAH_AYAH_PREFIX_PLAIN.length).trimStart();
+    if (rest.length > 0) return rest;
+    return ar;
+  }
+
+  // alquran.cloud Uthmani: ٱ, ٰ on م, and shadda+fatha order on رّ may differ from plain text
+  const uthmaniPrefix =
+    /^بِسْمِ\s+ٱ?للّ[\u064e\u0651]+ه[\u064e\u0651]*ِ\s+ٱ?لرّ[\u064e\u0651]+حْمَ[\u0670\u0640]?نِ\s+ٱ?لرّ[\u064e\u0651]+حِيمِ\s*/u;
+  if (uthmaniPrefix.test(t)) {
+    const rest = t.replace(uthmaniPrefix, "").trimStart();
+    if (rest.length > 0) return rest;
+  }
+
+  return ar;
+}
+
+function stripLeadingBismillahFromEnglish(en) {
+  const t = (en || "").trim();
+  const stripped = t
+    .replace(/^In the name of (God|Allah),? the Most Gracious,? the Most Merciful\.?:?\s*/i, "")
+    .replace(
+      /^In the name of (God|Allah),?\s*The Most Gracious,?\s*The Dispenser of Grace\.?:?\s*/i,
+      ""
+    )
+    .trim();
+  return stripped.length > 0 ? stripped : en;
+}
+
+function applyStandaloneBismillahDisplayToAyat(surahId, ayat) {
+  if (!surahShowsStandaloneBismillah(surahId) || !ayat.length) return ayat;
+  const [first, ...rest] = ayat;
+  return [
+    {
+      ...first,
+      ar: stripLeadingBismillahFromArabic(first.ar),
+      en: stripLeadingBismillahFromEnglish(first.en),
+    },
+    ...rest,
+  ];
+}
+
+function clearBismillahHeaderHighlight() {
+  document.querySelectorAll(".bismillah-header.is-active-bismillah").forEach((el) => {
+    el.classList.remove("is-active-bismillah");
+  });
+}
+
+function highlightBismillahHeader() {
+  clearBismillahHeaderHighlight();
+  clearFollowHighlightOnlyAyahs();
+  const el = document.getElementById("bismillah-header");
+  if (el) {
+    el.classList.add("is-active-bismillah");
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+
+function clearFollowHighlightOnlyAyahs() {
+  document.querySelectorAll(".ayah.active-ayah").forEach((el) => {
+    el.classList.remove("active-ayah");
+  });
+}
+
 if (!viewer) {
   throw new Error("Surah viewer element not found.");
 }
@@ -73,10 +161,44 @@ function setFollowStatus(text) {
   }
 }
 
-function setToggleButtonLabel(text) {
-  if (toggleFollowBtn) {
-    toggleFollowBtn.textContent = text;
+function updateFollowDockInfo() {
+  if (!followDockSurahEl || !followDockAyahEl) return;
+  if (!followState || !followState.ayat.length) {
+    followDockSurahEl.textContent = "—";
+    followDockAyahEl.textContent = "Ayah — of —";
+    return;
   }
+  followDockSurahEl.textContent = followState.surahEnglishName || `Surah ${followState.surahId}`;
+  const total = followState.ayat.length;
+  if (followState.onBismillahIntro) {
+    followDockAyahEl.textContent = `Bismillah · Ayah 1 of ${total}`;
+    return;
+  }
+  let idx = followState.currentIndex;
+  if (idx >= total) idx = total - 1;
+  if (idx < 0) idx = 0;
+  const num = followState.ayat[idx]?.number ?? idx + 1;
+  followDockAyahEl.textContent = `Ayah ${num} of ${total}`;
+}
+
+function updatePlayPauseButton() {
+  if (!followPlayPauseBtn) return;
+  if (!followState) {
+    followPlayPauseBtn.textContent = "⏯";
+    followPlayPauseBtn.setAttribute("aria-label", "Play follow mode");
+    return;
+  }
+  const playing =
+    followState.isPlaying &&
+    followState.currentAudio &&
+    !followState.currentAudio.paused;
+  followPlayPauseBtn.textContent = playing ? "⏸" : "⏯";
+  followPlayPauseBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
+}
+
+function updateFollowDockUI() {
+  updateFollowDockInfo();
+  updatePlayPauseButton();
 }
 
 function getSurahId() {
@@ -92,6 +214,22 @@ function getSelectedReciterKey() {
   return RECITERS[key] ? key : DEFAULT_RECITER;
 }
 
+function applyReciterSelectionToUI(reciterKey) {
+  const key = RECITERS[reciterKey] ? reciterKey : DEFAULT_RECITER;
+  if (reciterSelect) {
+    reciterSelect.value = key;
+  }
+  document.querySelectorAll(".reciter-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.reciter === key);
+  });
+}
+
+function syncReciterFromStorage() {
+  const saved = localStorage.getItem("selected-reciter");
+  const key = saved && RECITERS[saved] ? saved : DEFAULT_RECITER;
+  applyReciterSelectionToUI(key);
+}
+
 function getSelectedReciter() {
   return RECITERS[getSelectedReciterKey()];
 }
@@ -104,6 +242,264 @@ function getRecitationUrl(surahId, reciterKey = getSelectedReciterKey()) {
 function getAyahRecitationUrl(surahId, ayahNumber, reciterKey = getSelectedReciterKey()) {
   const reciter = RECITERS[reciterKey] || RECITERS[DEFAULT_RECITER];
   return `https://everyayah.com/data/${reciter.ayahFolder}/${String(surahId).padStart(3, "0")}${String(ayahNumber).padStart(3, "0")}.mp3`;
+}
+
+function clearFollowHighlight() {
+  clearFollowHighlightOnlyAyahs();
+  clearBismillahHeaderHighlight();
+}
+
+function setFollowActiveAyah(ayahNumber) {
+  clearFollowHighlight();
+  const ayahEl = document.getElementById(`ayah-${ayahNumber}`);
+  if (!ayahEl) return;
+  ayahEl.classList.add("active-ayah");
+  ayahEl.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function followPlayTry(audio) {
+  try {
+    const p = audio.play();
+    if (p !== undefined) {
+      p.catch((err) => {
+        console.log("[Follow Mode] play() rejected:", err?.message || String(err));
+      });
+    }
+  } catch (err) {
+    console.log("[Follow Mode] play() threw:", err?.message || String(err));
+  }
+}
+
+function followModeFinish() {
+  if (!followState) return;
+  followState.isPlaying = false;
+  followState.onBismillahIntro = false;
+  followState.bismillahIntroDone = false;
+  if (followState.currentAudio) {
+    followState.currentAudio.pause();
+    followState.currentAudio = null;
+  }
+  followState.currentIndex = followState.ayat.length;
+  setFollowStatus("Follow mode finished for this surah.");
+  updateFollowDockUI();
+  clearFollowHighlight();
+}
+
+function playFollowCurrentAyahAudio() {
+  if (!followState || !followState.isPlaying) return;
+
+  if (followState.fullSurahAudio && !followState.fullSurahAudio.paused) {
+    followState.fullSurahAudio.pause();
+  }
+
+  if (followState.currentAudio) {
+    followState.currentAudio.pause();
+    followState.currentAudio = null;
+  }
+
+  if (followState.needsBismillahIntro && !followState.bismillahIntroDone) {
+    followState.onBismillahIntro = true;
+    const url = getBismillahIntroUrl(followState.reciterKey);
+    console.log("[Follow Mode] Bismillah intro URL:", url);
+
+    highlightBismillahHeader();
+
+    const audio = new Audio(url);
+    audio.muted = false;
+    audio.volume = 1;
+    audio.playsInline = true;
+    followState.currentAudio = audio;
+
+    audio.addEventListener("ended", () => {
+      if (!followState || !followState.isPlaying) return;
+      if (followState.currentAudio !== audio) return;
+      followState.bismillahIntroDone = true;
+      followState.onBismillahIntro = false;
+      const first = followState.ayat[0];
+      if (first) setFollowActiveAyah(first.number);
+      playFollowCurrentAyahAudio();
+    });
+
+    followPlayTry(audio);
+    setFollowStatus("Playing Bismillah…");
+    updateFollowDockUI();
+    return;
+  }
+
+  followState.onBismillahIntro = false;
+
+  const idx = followState.currentIndex;
+  const ayah = followState.ayat[idx];
+  if (!ayah) {
+    followModeFinish();
+    return;
+  }
+
+  const url = getAyahRecitationUrl(followState.surahId, ayah.number, followState.reciterKey);
+  console.log("[Follow Mode] ayah URL:", url);
+
+  setFollowActiveAyah(ayah.number);
+
+  const audio = new Audio(url);
+  audio.muted = false;
+  audio.volume = 1;
+  audio.playsInline = true;
+  followState.currentAudio = audio;
+
+  audio.addEventListener("ended", () => {
+    if (!followState || !followState.isPlaying) return;
+    if (followState.currentAudio !== audio) return;
+    followState.currentIndex += 1;
+    if (followState.currentIndex >= followState.ayat.length) {
+      followModeFinish();
+      return;
+    }
+    const nextAyah = followState.ayat[followState.currentIndex];
+    setFollowActiveAyah(nextAyah.number);
+    playFollowCurrentAyahAudio();
+  });
+
+  followPlayTry(audio);
+
+  setFollowStatus(`Playing Ayah ${ayah.number} in follow mode...`);
+  updateFollowDockUI();
+}
+
+function onFollowPlayPauseClick() {
+  if (!followState) return;
+
+  if (
+    followState.isPlaying &&
+    followState.currentAudio &&
+    !followState.currentAudio.paused
+  ) {
+    followState.isPlaying = false;
+    followState.currentAudio.pause();
+    setFollowStatus("Follow mode paused.");
+    updateFollowDockUI();
+    return;
+  }
+
+  const canResume =
+    followState.currentAudio &&
+    followState.currentAudio.paused &&
+    !followState.currentAudio.ended &&
+    followState.currentAudio.currentTime > 0;
+
+  if (canResume) {
+    followState.isPlaying = true;
+    followPlayTry(followState.currentAudio);
+    setFollowStatus("Follow mode playing.");
+    updateFollowDockUI();
+    return;
+  }
+
+  followState.isPlaying = true;
+  followState.reciterKey = getSelectedReciterKey();
+  if (followState.currentIndex >= followState.ayat.length) {
+    followState.currentIndex = 0;
+  }
+
+  playFollowCurrentAyahAudio();
+  updateFollowDockUI();
+}
+
+function effectiveFollowIndex() {
+  if (!followState) return 0;
+  if (followState.onBismillahIntro) return -1;
+  const len = followState.ayat.length;
+  if (!len) return 0;
+  let idx = followState.currentIndex;
+  if (idx >= len) idx = len - 1;
+  if (idx < 0) idx = 0;
+  return idx;
+}
+
+function clampFollowIndex(i) {
+  if (!followState || !followState.ayat.length) return 0;
+  const max = followState.ayat.length - 1;
+  return Math.max(0, Math.min(max, i));
+}
+
+function seekFollowToIndex(newIndex) {
+  if (!followState) return;
+  const idx = clampFollowIndex(newIndex);
+  if (followState.currentAudio) {
+    followState.currentAudio.pause();
+    followState.currentAudio = null;
+  }
+  followState.bismillahIntroDone = true;
+  followState.onBismillahIntro = false;
+  followState.currentIndex = idx;
+  followState.isPlaying = true;
+  followState.reciterKey = getSelectedReciterKey();
+  const ayah = followState.ayat[idx];
+  if (!ayah) return;
+  playFollowCurrentAyahAudio();
+  updateFollowDockUI();
+}
+
+function onFollowPrevClick() {
+  if (!followState) return;
+  seekFollowToIndex(effectiveFollowIndex() - 1);
+}
+
+function onFollowRewindClick() {
+  if (!followState) return;
+  seekFollowToIndex(effectiveFollowIndex() - 5);
+}
+
+function onFollowForwardClick() {
+  if (!followState) return;
+  seekFollowToIndex(effectiveFollowIndex() + 5);
+}
+
+function onFollowNextClick() {
+  if (!followState) return;
+  seekFollowToIndex(effectiveFollowIndex() + 1);
+}
+
+function onStopFollowClick() {
+  if (!followState) return;
+  followState.isPlaying = false;
+  followState.bismillahIntroDone = false;
+  followState.onBismillahIntro = false;
+  if (followState.currentAudio) {
+    followState.currentAudio.pause();
+    followState.currentAudio = null;
+  }
+  followState.currentIndex = 0;
+  clearFollowHighlight();
+  setFollowStatus("Follow mode stopped.");
+  updateFollowDockUI();
+}
+
+function jumpFollowToAyahNumber(ayahNumber) {
+  if (!followState) return;
+  const idx = followState.ayat.findIndex((a) => a.number === ayahNumber);
+  if (idx < 0) return;
+
+  if (followState.currentAudio) {
+    followState.currentAudio.pause();
+    followState.currentAudio = null;
+  }
+
+  followState.bismillahIntroDone = true;
+  followState.onBismillahIntro = false;
+  followState.currentIndex = idx;
+  followState.isPlaying = true;
+  followState.reciterKey = getSelectedReciterKey();
+
+  playFollowCurrentAyahAudio();
+  updateFollowDockUI();
+}
+
+function onSurahViewerAyahClick(e) {
+  const article = e.target.closest(".ayah");
+  if (!article || !viewer.contains(article)) return;
+  const num = Number(article.dataset.ayahNumber);
+  if (!Number.isInteger(num) || num < 1) return;
+  jumpFollowToAyahNumber(num);
 }
 
 function renderLoading(surahId) {
@@ -139,12 +535,20 @@ function renderSurah(arabicMeta, ayat) {
       <p class="recitation-title">Quran Recitation (${selectedReciter.label})</p>
       <audio id="surah-audio" class="recitation-player" controls preload="none" src="${recitationUrl}"></audio>
       <p id="recitation-status" class="muted recitation-hint">Press play to listen to this surah recitation.</p>
-      <audio id="ayah-follow-audio" preload="none"></audio>
     </div>
+    ${
+      surahShowsStandaloneBismillah(surahId)
+        ? `<div class="bismillah-header" id="bismillah-header" role="presentation">
+      <span class="bismillah-rule" aria-hidden="true"></span>
+      <span class="bismillah-text">${BISMILLAH_HEADER_HTML}</span>
+      <span class="bismillah-rule" aria-hidden="true"></span>
+    </div>`
+        : ""
+    }
     ${ayat
       .map(
         (ayah) => `
-          <article class="ayah" id="ayah-${ayah.number}" data-ayah-number="${ayah.number}">
+          <article class="ayah ayah-clickable" id="ayah-${ayah.number}" data-ayah-number="${ayah.number}">
             <p class="ayah-ar arabic">${ayah.ar}</p>
             <p>${ayah.en}</p>
             <p class="muted">Ayah ${ayah.number}</p>
@@ -169,124 +573,28 @@ function renderSurah(arabicMeta, ayat) {
     });
   }
 
-  const followAudio = document.getElementById("ayah-follow-audio");
-  if (!followAudio || !toggleFollowBtn || !stopFollowBtn) {
-    return;
-  }
-
   followState = {
     surahId,
+    surahEnglishName: arabicMeta.englishName,
     ayat,
     currentIndex: 0,
     isPlaying: false,
-    followAudio,
+    currentAudio: null,
     fullSurahAudio: audio || null,
     reciterKey: getSelectedReciterKey(),
+    needsBismillahIntro: surahUsesBismillahAudioIntro(surahId),
+    bismillahIntroDone: false,
+    onBismillahIntro: false,
   };
-
-  const clearHighlight = () => {
-    document.querySelectorAll(".ayah.active-ayah").forEach((el) => {
-      el.classList.remove("active-ayah");
-    });
-  };
-
-  const highlightAyah = (ayahNumber) => {
-    clearHighlight();
-    const ayahEl = document.getElementById(`ayah-${ayahNumber}`);
-    if (!ayahEl) return;
-    ayahEl.classList.add("active-ayah");
-    ayahEl.scrollIntoView({ behavior: "smooth", block: "center" });
-  };
-
-  const playCurrentAyah = () => {
-    if (!followState) return;
-    const currentAyah = followState.ayat[followState.currentIndex];
-    if (!currentAyah) {
-      followState.isPlaying = false;
-      setFollowStatus("Follow mode finished for this surah.");
-      setToggleButtonLabel("Replay Follow Mode");
-      return;
-    }
-
-    highlightAyah(currentAyah.number);
-    if (followState.fullSurahAudio && !followState.fullSurahAudio.paused) {
-      followState.fullSurahAudio.pause();
-    }
-    const src = getAyahRecitationUrl(followState.surahId, currentAyah.number, followState.reciterKey);
-    followState.followAudio.src = src;
-    setFollowStatus(`Playing Ayah ${currentAyah.number} in follow mode...`);
-    setToggleButtonLabel("Pause Follow Mode");
-    followState.followAudio.play().catch(() => {
-      setFollowStatus("Could not play recitation right now. Please press the button again.");
-      followState.isPlaying = false;
-      setToggleButtonLabel("Play Follow Mode");
-    });
-  };
-
-  toggleFollowBtn.addEventListener("click", () => {
-    if (!followState) return;
-
-    // If currently playing, this acts as Pause.
-    if (followState.isPlaying) {
-      followState.isPlaying = false;
-      followState.followAudio.pause();
-      setFollowStatus("Follow mode paused. Press the same button to continue.");
-      setToggleButtonLabel("Resume Follow Mode");
-      return;
-    }
-
-    // Resume from current position if paused.
-    if (followState.followAudio.src && followState.followAudio.currentTime > 0) {
-      followState.isPlaying = true;
-      followState.followAudio.play().catch(() => {
-        setFollowStatus("Could not resume recitation. Please press the button again.");
-        followState.isPlaying = false;
-        setToggleButtonLabel("Resume Follow Mode");
-      });
-      setToggleButtonLabel("Pause Follow Mode");
-      return;
-    }
-
-    // Otherwise start playing from current ayah index.
-    followState.isPlaying = true;
-    followState.reciterKey = getSelectedReciterKey();
-    if (followState.currentIndex >= followState.ayat.length) {
-      followState.currentIndex = 0;
-    }
-    playCurrentAyah();
-  });
-
-  stopFollowBtn.addEventListener("click", () => {
-    if (!followState) return;
-    followState.isPlaying = false;
-    followState.followAudio.pause();
-    followState.followAudio.currentTime = 0;
-    followState.currentIndex = 0;
-    setFollowStatus("Follow mode stopped.");
-    setToggleButtonLabel("Play Follow Mode");
-    clearHighlight();
-  });
-
-  followAudio.addEventListener("ended", () => {
-    if (!followState || !followState.isPlaying) return;
-    followState.currentIndex += 1;
-    playCurrentAyah();
-  });
-
-  followAudio.addEventListener("error", () => {
-    if (!followState || !followState.isPlaying) return;
-    // Skip problematic ayah audio and continue.
-    followState.currentIndex += 1;
-    playCurrentAyah();
-  });
 
   setFollowStatus("Follow mode is ready.");
-  setToggleButtonLabel("Play Follow Mode");
+  updateFollowDockUI();
 
   if (reciterSelect) {
     reciterSelect.value = getSelectedReciterKey();
     reciterSelect.onchange = () => {
       const newReciterKey = getSelectedReciterKey();
+      applyReciterSelectionToUI(newReciterKey);
       const newReciter = RECITERS[newReciterKey];
       localStorage.setItem("selected-reciter", newReciterKey);
 
@@ -308,7 +616,13 @@ function renderSurah(arabicMeta, ayat) {
       if (followState) {
         followState.reciterKey = newReciterKey;
         if (followState.isPlaying) {
-          playCurrentAyah();
+          if (followState.onBismillahIntro) {
+            highlightBismillahHeader();
+          } else {
+            const cur = followState.ayat[followState.currentIndex];
+            if (cur) setFollowActiveAyah(cur.number);
+          }
+          playFollowCurrentAyahAudio();
         } else {
           setFollowStatus(`Reciter changed to ${newReciter.label}.`);
         }
@@ -344,11 +658,13 @@ async function loadSurah() {
       throw new Error("Incomplete surah data.");
     }
 
-    const ayat = arabicAyat.map((ayah, index) => ({
+    const ayatRaw = arabicAyat.map((ayah, index) => ({
       number: ayah.numberInSurah,
       ar: ayah.text,
       en: englishAyat[index]?.text || "",
     }));
+
+    const ayat = applyStandaloneBismillahDisplayToAyat(surahId, ayatRaw);
 
     renderSurah(arabicEdition, ayat);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -357,13 +673,20 @@ async function loadSurah() {
   }
 }
 
-loadSurah();
-
-if (reciterSelect) {
-  const savedReciter = localStorage.getItem("selected-reciter");
-  if (savedReciter && RECITERS[savedReciter]) {
-    reciterSelect.value = savedReciter;
-  } else {
-    reciterSelect.value = DEFAULT_RECITER;
-  }
+if (!followDockHandlersBound && followPlayPauseBtn) {
+  followDockHandlersBound = true;
+  followPlayPauseBtn.addEventListener("click", onFollowPlayPauseClick);
+  document.getElementById("follow-btn-prev")?.addEventListener("click", onFollowPrevClick);
+  document.getElementById("follow-btn-rewind")?.addEventListener("click", onFollowRewindClick);
+  document.getElementById("follow-btn-forward")?.addEventListener("click", onFollowForwardClick);
+  document.getElementById("follow-btn-next")?.addEventListener("click", onFollowNextClick);
+  document.getElementById("follow-btn-stop")?.addEventListener("click", onStopFollowClick);
 }
+
+if (!surahViewerAyahClickBound && viewer) {
+  surahViewerAyahClickBound = true;
+  viewer.addEventListener("click", onSurahViewerAyahClick);
+}
+
+syncReciterFromStorage();
+loadSurah();

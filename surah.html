@@ -16,7 +16,7 @@
     <header class="site-header">
       <div class="container nav-wrap">
         <a class="logo" href="index.html" aria-label="Learn with Arwa home">
-          <img class="logo-image" src="assets/logo.png" alt="Learn with Arwa logo" />
+          <img class="logo-image" src="assets/logo.png?v=6" alt="Learn with Arwa logo" />
         </a>
         <ul class="nav-links">
           <li><a href="index.html">Home</a></li>
@@ -55,19 +55,58 @@
       </section>
     </main>
 
-    <div class="follow-dock" role="region" aria-label="Recitation controls">
-      <div class="follow-dock-actions">
-        <button id="toggle-follow-recitation" class="ayah-play" type="button">Play Follow Mode</button>
-        <button id="stop-follow-recitation" class="ayah-play" type="button">Stop</button>
+    <div class="follow-dock" role="region" aria-label="Follow mode recitation">
+      <div class="container follow-dock-inner">
+        <div class="follow-dock-info">
+          <div class="follow-dock-info-text">
+            <span class="follow-dock-surah" id="follow-dock-surah">—</span>
+            <span class="follow-dock-ayah-line" id="follow-dock-ayah">Ayah — of —</span>
+          </div>
+        </div>
+        <div class="follow-dock-transport" role="group" aria-label="Playback controls">
+          <button type="button" id="follow-btn-prev" class="follow-dock-btn" title="Previous ayah" aria-label="Previous ayah">
+            ⏮
+          </button>
+          <button type="button" id="follow-btn-rewind" class="follow-dock-btn" title="Back 5 ayahs" aria-label="Rewind five ayahs">
+            ⏪
+          </button>
+          <button type="button" id="follow-btn-play-pause" class="follow-dock-btn follow-dock-btn--primary" title="Play or pause" aria-label="Play">
+            ⏯
+          </button>
+          <button type="button" id="follow-btn-forward" class="follow-dock-btn" title="Forward 5 ayahs" aria-label="Forward five ayahs">
+            ⏩
+          </button>
+          <button type="button" id="follow-btn-next" class="follow-dock-btn" title="Next ayah" aria-label="Next ayah">
+            ⏭
+          </button>
+          <button type="button" id="follow-btn-stop" class="follow-dock-btn" title="Stop" aria-label="Stop and reset">
+            ⏹
+          </button>
+        </div>
+        <div class="follow-dock-reciter-wrap">
+          <label class="follow-dock-reciter-label" for="reciter-select">Reciter</label>
+          <select id="reciter-select" class="follow-dock-select" aria-label="Choose reciter">
+            <option value="husri" selected>Mahmoud Al-Husri</option>
+            <option value="abdulbasit">Abdul Basit Abdul Samad</option>
+            <option value="sudais">Sudais</option>
+            <option value="shureim">Shureim</option>
+            <option value="ghamdi">Saad Al-Ghamdi</option>
+            <option value="shatri">Abu Bakr Al-Shatri</option>
+            <option value="muaiqly">Maher Al-Muaiqly</option>
+            <option value="minshawi">Muhammad Al-Minshawi</option>
+            <option value="afasy">Mishary Al-Afasy</option>
+            <option value="omarhisham">Omar Hisham Al-Arabi</option>
+          </select>
+        </div>
       </div>
-      <p id="follow-dock-status" class="muted follow-dock-status">Follow mode is ready.</p>
+      <p id="follow-dock-status" class="follow-dock-status muted">Follow mode is ready.</p>
     </div>
 
     <footer class="site-footer dark-section">
       <div class="container footer-grid">
         <div>
           <a class="logo" href="index.html" aria-label="Learn with Arwa home">
-            <img class="logo-image" src="assets/logo.png" alt="Learn with Arwa logo" />
+            <img class="logo-image" src="assets/logo.png?v=6" alt="Learn with Arwa logo" />
           </a>
         </div>
         <div class="footer-links">
@@ -87,24 +126,10 @@
       </div>
     </footer>
 
-    <!-- Hidden select kept for JS compatibility -->
-    <select id="reciter-select" style="display:none;">
-      <option value="husri">Mahmoud Al-Husri</option>
-      <option value="abdulbasit">Abdul Basit Abdul Samad</option>
-      <option value="sudais">Sudais</option>
-      <option value="shureim">Shureim</option>
-      <option value="ghamdi">Saad Al-Ghamdi</option>
-      <option value="shatri">Abu Bakr Al-Shatri</option>
-      <option value="muaiqly">Maher Al-Muaiqly</option>
-      <option value="minshawi">Muhammad Al-Minshawi</option>
-      <option value="afasy">Mishary Al-Afasy</option>
-      <option value="omarhisham">Omar Hisham Al-Arabi</option>
-    </select>
-
     <script type="module" src="scripts/common.js"></script>
     <script type="module" src="scripts/surah.js"></script>
     <script>
-      // Wire reciter buttons to the hidden select
+      // Wire top reciter buttons to the dock select (sync + onchange handled in surah.js)
       const btns = document.querySelectorAll('.reciter-btn');
       const sel = document.getElementById('reciter-select');
       btns.forEach(btn => {
@@ -115,15 +140,6 @@
           sel.dispatchEvent(new Event('change'));
         });
       });
-
-      // Restore saved reciter on load
-      const saved = localStorage.getItem('selected-reciter');
-      if (saved) {
-        btns.forEach(b => {
-          b.classList.remove('active');
-          if (b.dataset.reciter === saved) b.classList.add('active');
-        });
-      }
     </script>
   </body>
 </html>
