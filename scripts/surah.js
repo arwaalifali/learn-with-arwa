@@ -56,7 +56,7 @@ const RECITERS = {
   },
   omarhisham: {
     label: "Omar Hisham Al-Arabi",
-    fullBaseUrl: "https://server8.mp3quran.net/omar_hisham",
+    fullBaseUrl: "https://archive.org/download/Omar-Hisham",
     ayahFolder: "Omar_Hisham_Al-Arabi_128kbps",
   },
 };
