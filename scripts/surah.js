@@ -7,6 +7,7 @@ const followDockStatus = document.getElementById("follow-dock-status");
 const followDockSurahEl = document.getElementById("follow-dock-surah");
 const followDockAyahEl = document.getElementById("follow-dock-ayah");
 const reciterSelect = document.getElementById("reciter-select");
+const reciterPickerSelect = document.getElementById("reciter-picker-select");
 
 const RECITERS = {
   husri: {
@@ -54,13 +55,16 @@ const RECITERS = {
     fullBaseUrl: "https://server8.mp3quran.net/afs",
     ayahFolder: "Mishary_Rashid_Alafasy_128kbps",
   },
-  omarhisham: {
-    label: "Omar Hisham Al-Arabi",
-    fullBaseUrl: "https://archive.org/download/Omar-Hisham",
-    ayahFolder: "Omar_Hisham_Al-Arabi_128kbps",
+  hanirrifai: {
+    label: "Hani Ar-Rifai",
+    fullBaseUrl: "https://server8.mp3quran.net/hani",
+    ayahFolder: "Hani_Rifai_64kbps",
   },
 };
 const DEFAULT_RECITER = "husri";
+const STORAGE_SELECTED_RECITER = "selected-reciter";
+const STORAGE_AUTOPLAY = "autoplay";
+const LAST_SURAH_ID = 114;
 
 const BISMILLAH_HEADER_HTML = "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ";
 
@@ -208,26 +212,242 @@ function getSurahId() {
   return id;
 }
 
+function getActiveReciterSelect() {
+  return reciterSelect || reciterPickerSelect;
+}
+
 function getSelectedReciterKey() {
-  if (!reciterSelect) return DEFAULT_RECITER;
-  const key = reciterSelect.value;
+  const select = getActiveReciterSelect();
+  if (!select) return DEFAULT_RECITER;
+  const key = select.value;
   return RECITERS[key] ? key : DEFAULT_RECITER;
+}
+
+function syncCustomSelectUI(selectEl) {
+  if (!selectEl) return;
+  const wrapper = selectEl.closest(".custom-select");
+  if (!wrapper) return;
+
+  const trigger = wrapper.querySelector(".custom-select-trigger");
+  const optionEls = wrapper.querySelectorAll(".custom-select-option");
+  const selectedOption = selectEl.options[selectEl.selectedIndex];
+
+  if (trigger) {
+    trigger.textContent = selectedOption?.textContent || "";
+  }
+
+  optionEls.forEach((li) => {
+    const selected = li.dataset.value === selectEl.value;
+    li.classList.toggle("is-selected", selected);
+    li.setAttribute("aria-selected", selected ? "true" : "false");
+  });
+}
+
+function enhanceCustomSelect(selectEl) {
+  if (!selectEl || selectEl.closest(".custom-select")) return;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "custom-select";
+  if (selectEl.classList.contains("reciter-picker-select")) {
+    wrapper.classList.add("custom-select--picker");
+  }
+  if (selectEl.classList.contains("follow-dock-select")) {
+    wrapper.classList.add("custom-select--dock");
+  }
+
+  const parent = selectEl.parentNode;
+  parent.insertBefore(wrapper, selectEl);
+  wrapper.appendChild(selectEl);
+  selectEl.classList.add("custom-select-native");
+
+  const listId = `custom-select-${selectEl.id || "reciter"}`;
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "custom-select-trigger";
+  trigger.setAttribute("aria-haspopup", "listbox");
+  trigger.setAttribute("aria-expanded", "false");
+  trigger.setAttribute("aria-controls", listId);
+
+  const menu = document.createElement("ul");
+  menu.className = "custom-select-menu";
+  menu.id = listId;
+  menu.setAttribute("role", "listbox");
+  menu.hidden = true;
+
+  const closeMenu = () => {
+    menu.hidden = true;
+    trigger.setAttribute("aria-expanded", "false");
+    wrapper.classList.remove("is-open");
+  };
+
+  const openMenu = () => {
+    document.querySelectorAll(".custom-select.is-open").forEach((openWrap) => {
+      if (openWrap !== wrapper) {
+        openWrap.classList.remove("is-open");
+        const openMenuEl = openWrap.querySelector(".custom-select-menu");
+        const openTrigger = openWrap.querySelector(".custom-select-trigger");
+        if (openMenuEl) openMenuEl.hidden = true;
+        if (openTrigger) openTrigger.setAttribute("aria-expanded", "false");
+      }
+    });
+    menu.hidden = false;
+    trigger.setAttribute("aria-expanded", "true");
+    wrapper.classList.add("is-open");
+  };
+
+  Array.from(selectEl.options).forEach((opt) => {
+    const li = document.createElement("li");
+    li.className = "custom-select-option";
+    li.setAttribute("role", "option");
+    li.dataset.value = opt.value;
+    li.textContent = opt.textContent;
+    if (opt.selected) {
+      li.classList.add("is-selected");
+      li.setAttribute("aria-selected", "true");
+    }
+    li.addEventListener("click", (e) => {
+      e.stopPropagation();
+      selectEl.value = opt.value;
+      selectEl.dispatchEvent(new Event("change", { bubbles: true }));
+      closeMenu();
+    });
+    menu.appendChild(li);
+  });
+
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (menu.hidden) openMenu();
+    else closeMenu();
+  });
+
+  selectEl.addEventListener("change", () => syncCustomSelectUI(selectEl));
+
+  document.addEventListener("click", (e) => {
+    if (!wrapper.contains(e.target)) closeMenu();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeMenu();
+  });
+
+  wrapper.appendChild(trigger);
+  wrapper.appendChild(menu);
+  syncCustomSelectUI(selectEl);
+}
+
+function initReciterCustomSelects() {
+  if (reciterPickerSelect) enhanceCustomSelect(reciterPickerSelect);
+  if (reciterSelect) enhanceCustomSelect(reciterSelect);
 }
 
 function applyReciterSelectionToUI(reciterKey) {
   const key = RECITERS[reciterKey] ? reciterKey : DEFAULT_RECITER;
-  if (reciterSelect) {
-    reciterSelect.value = key;
+  if (reciterSelect) reciterSelect.value = key;
+  if (reciterPickerSelect) reciterPickerSelect.value = key;
+  syncCustomSelectUI(reciterSelect);
+  syncCustomSelectUI(reciterPickerSelect);
+}
+
+function onReciterChange(event) {
+  const fromSelect = event?.target?.value;
+  const newReciterKey =
+    fromSelect && RECITERS[fromSelect] ? fromSelect : getSelectedReciterKey();
+  applyReciterSelectionToUI(newReciterKey);
+  const newReciter = RECITERS[newReciterKey];
+  localStorage.setItem(STORAGE_SELECTED_RECITER, newReciterKey);
+
+  const titleEl = viewer.querySelector(".recitation-title");
+  if (titleEl) {
+    titleEl.textContent = `Quran Recitation (${newReciter.label})`;
   }
-  document.querySelectorAll(".reciter-btn").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.reciter === key);
-  });
+
+  if (followState?.fullSurahAudio) {
+    const wasPlayingTop = !followState.fullSurahAudio.paused;
+    followState.fullSurahAudio.src = getRecitationUrl(followState.surahId, newReciterKey);
+    if (wasPlayingTop) {
+      followState.fullSurahAudio.play().catch(() => {
+        setFollowStatus("Changed reciter. Press play to continue.");
+      });
+    }
+  }
+
+  if (followState) {
+    followState.reciterKey = newReciterKey;
+    if (followState.isPlaying) {
+      if (followState.onBismillahIntro) {
+        highlightBismillahHeader();
+      } else {
+        const cur = followState.ayat[followState.currentIndex];
+        if (cur) setFollowActiveAyah(cur.number);
+      }
+      playFollowCurrentAyahAudio();
+    } else {
+      setFollowStatus(`Reciter changed to ${newReciter.label}.`);
+    }
+  }
+}
+
+function bindReciterSelectHandlers() {
+  if (reciterSelect) {
+    reciterSelect.onchange = onReciterChange;
+  }
+  if (reciterPickerSelect) {
+    reciterPickerSelect.onchange = onReciterChange;
+  }
 }
 
 function syncReciterFromStorage() {
-  const saved = localStorage.getItem("selected-reciter");
+  const saved = localStorage.getItem(STORAGE_SELECTED_RECITER);
   const key = saved && RECITERS[saved] ? saved : DEFAULT_RECITER;
   applyReciterSelectionToUI(key);
+}
+
+function persistReciterForNextSurah(reciterKey) {
+  const key = RECITERS[reciterKey] ? reciterKey : getSelectedReciterKey();
+  localStorage.setItem(STORAGE_SELECTED_RECITER, key);
+}
+
+function advanceToNextSurah() {
+  if (!followState) return;
+  const nextId = followState.surahId + 1;
+  if (nextId > LAST_SURAH_ID) return;
+
+  if (followState.currentAudio) {
+    followState.currentAudio.pause();
+    followState.currentAudio = null;
+  }
+  followState.isPlaying = false;
+
+  persistReciterForNextSurah(followState.reciterKey);
+  localStorage.setItem(STORAGE_AUTOPLAY, "true");
+  window.location.assign(`surah.html?id=${nextId}`);
+}
+
+function handleSurahFollowComplete() {
+  if (!followState) return;
+  if (followState.surahId >= LAST_SURAH_ID) {
+    followModeFinish("You have completed the Quran");
+    return;
+  }
+  advanceToNextSurah();
+}
+
+function startFollowModeFromBeginning() {
+  if (!followState) return;
+  followState.isPlaying = true;
+  followState.currentIndex = 0;
+  followState.bismillahIntroDone = false;
+  followState.onBismillahIntro = false;
+  followState.reciterKey = getSelectedReciterKey();
+  followState.needsBismillahIntro = surahUsesBismillahAudioIntro(followState.surahId);
+  playFollowCurrentAyahAudio();
+  updateFollowDockUI();
+}
+
+function maybeAutoplayFollowMode() {
+  if (localStorage.getItem(STORAGE_AUTOPLAY) !== "true") return;
+  localStorage.removeItem(STORAGE_AUTOPLAY);
+  startFollowModeFromBeginning();
 }
 
 function getSelectedReciter() {
@@ -270,7 +490,7 @@ function followPlayTry(audio) {
   }
 }
 
-function followModeFinish() {
+function followModeFinish(statusMessage = "Follow mode finished for this surah.") {
   if (!followState) return;
   followState.isPlaying = false;
   followState.onBismillahIntro = false;
@@ -280,7 +500,7 @@ function followModeFinish() {
     followState.currentAudio = null;
   }
   followState.currentIndex = followState.ayat.length;
-  setFollowStatus("Follow mode finished for this surah.");
+  setFollowStatus(statusMessage);
   updateFollowDockUI();
   clearFollowHighlight();
 }
@@ -331,7 +551,11 @@ function playFollowCurrentAyahAudio() {
   const idx = followState.currentIndex;
   const ayah = followState.ayat[idx];
   if (!ayah) {
-    followModeFinish();
+    if (followState.currentIndex >= followState.ayat.length && followState.ayat.length > 0) {
+      handleSurahFollowComplete();
+    } else {
+      followModeFinish();
+    }
     return;
   }
 
@@ -351,7 +575,7 @@ function playFollowCurrentAyahAudio() {
     if (followState.currentAudio !== audio) return;
     followState.currentIndex += 1;
     if (followState.currentIndex >= followState.ayat.length) {
-      followModeFinish();
+      handleSurahFollowComplete();
       return;
     }
     const nextAyah = followState.ayat[followState.currentIndex];
@@ -590,45 +814,7 @@ function renderSurah(arabicMeta, ayat) {
   setFollowStatus("Follow mode is ready.");
   updateFollowDockUI();
 
-  if (reciterSelect) {
-    reciterSelect.value = getSelectedReciterKey();
-    reciterSelect.onchange = () => {
-      const newReciterKey = getSelectedReciterKey();
-      applyReciterSelectionToUI(newReciterKey);
-      const newReciter = RECITERS[newReciterKey];
-      localStorage.setItem("selected-reciter", newReciterKey);
-
-      const titleEl = viewer.querySelector(".recitation-title");
-      if (titleEl) {
-        titleEl.textContent = `Quran Recitation (${newReciter.label})`;
-      }
-
-      if (followState?.fullSurahAudio) {
-        const wasPlayingTop = !followState.fullSurahAudio.paused;
-        followState.fullSurahAudio.src = getRecitationUrl(followState.surahId, newReciterKey);
-        if (wasPlayingTop) {
-          followState.fullSurahAudio.play().catch(() => {
-            setFollowStatus("Changed reciter. Press play to continue.");
-          });
-        }
-      }
-
-      if (followState) {
-        followState.reciterKey = newReciterKey;
-        if (followState.isPlaying) {
-          if (followState.onBismillahIntro) {
-            highlightBismillahHeader();
-          } else {
-            const cur = followState.ayat[followState.currentIndex];
-            if (cur) setFollowActiveAyah(cur.number);
-          }
-          playFollowCurrentAyahAudio();
-        } else {
-          setFollowStatus(`Reciter changed to ${newReciter.label}.`);
-        }
-      }
-    };
-  }
+  applyReciterSelectionToUI(getSelectedReciterKey());
 }
 
 async function loadSurah() {
@@ -667,6 +853,7 @@ async function loadSurah() {
     const ayat = applyStandaloneBismillahDisplayToAyat(surahId, ayatRaw);
 
     renderSurah(arabicEdition, ayat);
+    maybeAutoplayFollowMode();
     window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (error) {
     renderError(surahId);
@@ -688,5 +875,7 @@ if (!surahViewerAyahClickBound && viewer) {
   viewer.addEventListener("click", onSurahViewerAyahClick);
 }
 
+initReciterCustomSelects();
 syncReciterFromStorage();
+bindReciterSelectHandlers();
 loadSurah();

@@ -48,11 +48,31 @@
         <div class="container">
           <p class="eyebrow">Verse of the Day</p>
           <div class="verse-box">
-            <p class="verse-arabic arabic">إِنَّ مَعَ الْعُسْرِ يُسْرًا</p>
-            <p class="verse-translation">
-              "Indeed, with hardship comes ease."
-            </p>
-            <p class="verse-reference">Surah Ash-Sharh 94:6</p>
+            <p class="verse-arabic arabic" id="verse-of-day-ar">Loading…</p>
+            <p class="verse-translation" id="verse-of-day-en"></p>
+            <p class="verse-reference" id="verse-of-day-ref"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <p class="eyebrow">Ayah of the Day</p>
+          <div class="daily-box daily-box--ayah">
+            <p class="daily-arabic arabic" id="ayah-of-day-ar">Loading…</p>
+            <p class="daily-translation" id="ayah-of-day-en"></p>
+            <p class="daily-reference" id="ayah-of-day-ref"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <p class="eyebrow">Dua of the Day</p>
+          <div class="daily-box daily-box--dua">
+            <p class="daily-arabic arabic" id="dua-of-day-ar"></p>
+            <p class="daily-translation" id="dua-of-day-en"></p>
+            <p class="daily-reference" id="dua-of-day-ref"></p>
           </div>
         </div>
       </section>
@@ -103,13 +123,17 @@
 
       <section class="section">
         <div class="container">
-          <div class="about-box decorative-border">
+          <div class="about-box decorative-border about-page-content">
             <h2>About Arwa</h2>
             <p>
-              I created Learn with Arwa to make sacred Islamic knowledge feel
-              close, calm and accessible for every heart. This space is built
-              for learners who want to return to Quran, Hadith and Duas with
-              sincerity and consistency.
+              As-salamu alaykum. My name is Arwa and I am 11 years old. I built
+              this website out of my deep love for Allah, the Holy Quran and the
+              Prophets peace be upon them all. I wanted to create a peaceful and
+              beautiful online space where Muslims and learners everywhere can
+              read, reflect and reconnect with the guidance of Islam at their own
+              pace. I hope this website brings you closer to Allah and fills your
+              heart with peace and knowledge. JazakAllahu Khayran for visiting
+              Learn with Arwa.
             </p>
           </div>
         </div>
@@ -119,11 +143,8 @@
     <footer class="site-footer dark-section">
       <div class="container footer-grid">
         <div>
-          <a class="logo" href="index.html">
-            <span class="logo-top">بِسْمِ اللَّهِ</span>
-            <span class="logo-star-row">✦</span>
-            <span class="logo-main">Learn with Arwa</span>
-            <span class="logo-tag">Quran · Hadith · Duas</span>
+          <a class="logo" href="index.html" aria-label="Learn with Arwa home">
+            <img class="logo-image" src="assets/logo.png?v=6" alt="Learn with Arwa logo" />
           </a>
         </div>
         <div class="footer-links">
@@ -144,5 +165,6 @@
     </footer>
 
     <script type="module" src="scripts/common.js"></script>
+    <script type="module" src="scripts/index.js"></script>
   </body>
 </html>
