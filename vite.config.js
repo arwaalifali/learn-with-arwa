@@ -10,6 +10,8 @@ export default defineConfig({
         surah: "surah.html",
         hadith: "hadith.html",
         duas: "duas.html",
+        prayerTimes: "prayer-times.html",
+        islamicCalendar: "islamic-calendar.html",
       },
     },
   },

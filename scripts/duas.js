@@ -1,3 +1,5 @@
+import { observeFadeInElements } from "./common.js";
+
 const duaContent = [
   {
     title: "Morning Duas",
@@ -53,18 +55,28 @@ const duaSections = document.getElementById("dua-sections");
 duaContent.forEach((group) => {
   const wrapper = document.createElement("section");
   wrapper.className = "dua-group";
-  wrapper.innerHTML = `<h2>${group.title}</h2>`;
+
+  const heading = document.createElement("h2");
+  heading.className = "fade-in-element";
+  heading.textContent = group.title;
+  wrapper.appendChild(heading);
+
+  const cardList = document.createElement("div");
+  cardList.className = "fade-in-stagger";
 
   group.items.forEach((dua) => {
     const card = document.createElement("article");
-    card.className = "entry-card";
+    card.className = "entry-card fade-in-element";
     card.innerHTML = `
       <p class="arabic">${dua.ar}</p>
       <p><strong>Transliteration:</strong> ${dua.translit}</p>
       <p>${dua.en}</p>
     `;
-    wrapper.appendChild(card);
+    cardList.appendChild(card);
   });
 
+  wrapper.appendChild(cardList);
   duaSections.appendChild(wrapper);
 });
+
+observeFadeInElements(duaSections);

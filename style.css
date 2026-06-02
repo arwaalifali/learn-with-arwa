@@ -1132,12 +1132,108 @@
     color: var(--mocha);
   }
   
-  .dua-group {
-    margin-bottom: 1.6rem;
+  .duas-container {
+    max-width: 56rem;
+    margin-inline: auto;
   }
-  
-  .dua-group h2 {
-    margin-bottom: 0.8rem;
+
+  .dua-group {
+    margin-bottom: 1.8rem;
+  }
+
+  .dua-group-heading {
+    font-family: "Playfair Display", serif;
+    font-size: 1.35rem;
+    color: var(--mocha);
+    margin: 0 0 0.85rem;
+  }
+
+  .dua-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .dua-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 100%;
+  }
+
+  .dua-ar {
+    font-family: "Amiri", serif;
+    font-size: clamp(1.2rem, 3vw, 1.45rem);
+    line-height: 1.55;
+    text-align: right;
+    direction: rtl;
+    margin: 0 0 0.65rem;
+  }
+
+  .dua-en {
+    font-family: "Lato", sans-serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin: 0 0 0.65rem;
+    flex: 1;
+  }
+
+  .dua-source {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin: 0;
+    margin-top: auto;
+  }
+
+  .hadiths-container {
+    max-width: 56rem;
+    margin-inline: auto;
+  }
+
+  .hadith-group {
+    margin-bottom: 1.8rem;
+  }
+
+  .hadith-group-heading {
+    font-family: "Playfair Display", serif;
+    font-size: 1.35rem;
+    color: var(--mocha);
+    margin: 0 0 0.85rem;
+  }
+
+  .hadith-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .hadith-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 100%;
+    border-left: 3px solid #a98b76;
+  }
+
+  .hadith-text {
+    font-family: "Lato", sans-serif;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    margin: 0 0 0.75rem;
+    flex: 1;
+  }
+
+  .hadith-card-source {
+    font-family: "Lato", sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--mocha);
+    margin: 0;
+    margin-top: auto;
   }
   
   @media (max-width: 940px) {
@@ -1215,5 +1311,571 @@
     .follow-dock-reciter-label {
       width: 100%;
       text-align: center;
+    }
+  }
+
+  /* ── Prayer Times ── */
+  .prayer-times-hero {
+    background: var(--mocha);
+  }
+
+  .prayer-times-section {
+    background: var(--cream);
+    position: relative;
+  }
+
+  .prayer-times-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at center, rgba(169, 139, 118, 0.14) 0 1.6px, transparent 1.6px),
+      linear-gradient(45deg, rgba(169, 139, 118, 0.08) 25%, transparent 25%, transparent 75%, rgba(169, 139, 118, 0.08) 75%),
+      linear-gradient(-45deg, rgba(169, 139, 118, 0.08) 25%, transparent 25%, transparent 75%, rgba(169, 139, 118, 0.08) 75%);
+    background-size: 23px 23px, 32px 32px, 32px 32px;
+    opacity: 0.35;
+  }
+
+  .prayer-times-container {
+    position: relative;
+    max-width: 40rem;
+    margin-inline: auto;
+  }
+
+  .prayer-times-status {
+    text-align: center;
+    padding: 1.5rem 0;
+  }
+
+  .prayer-times-error {
+    color: var(--ink);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .prayer-times-panel {
+    padding: 0.5rem 0 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .prayer-hijri-date {
+    font-family: "Amiri", serif;
+    font-size: clamp(1.35rem, 4vw, 1.85rem);
+    text-align: center;
+    color: var(--mocha);
+    margin: 0 0 1rem;
+    line-height: 1.5;
+    direction: rtl;
+  }
+
+  .prayer-times-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .prayer-location {
+    font-family: "Playfair Display", serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  .prayer-refresh-btn {
+    flex-shrink: 0;
+  }
+
+  .prayer-countdown {
+    text-align: center;
+    font-family: "Playfair Display", serif;
+    font-size: clamp(1.1rem, 3vw, 1.35rem);
+    font-weight: 700;
+    color: var(--green);
+    margin: 0 0 1.25rem;
+  }
+
+  .prayer-clock-toggle {
+    display: inline-flex;
+    align-items: stretch;
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--mocha);
+    margin: 0 auto 1rem;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .prayer-times-meta,
+  .prayer-hijri-date,
+  .prayer-countdown {
+    width: 100%;
+  }
+
+  .prayer-clock-toggle-btn {
+    border: none;
+    background: #fff;
+    color: var(--mocha);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 0.45rem 1.1rem;
+    cursor: pointer;
+    transition: background-color var(--transition), color var(--transition);
+  }
+
+  .prayer-clock-toggle-btn + .prayer-clock-toggle-btn {
+    border-left: 1px solid var(--mocha);
+  }
+
+  .prayer-clock-toggle-btn.is-active {
+    background: var(--mocha);
+    color: #fff;
+  }
+
+  .prayer-clock-toggle-btn:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px;
+    z-index: 1;
+  }
+
+  .prayer-times-list {
+    width: 100%;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .prayer-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    padding: 1rem 1.15rem;
+    background: #fff;
+    color: var(--ink);
+    border: 1px solid rgba(191, 162, 140, 0.55);
+    box-shadow: var(--shadow);
+  }
+
+  .prayer-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at center, rgba(169, 139, 118, 0.12) 0 1.4px, transparent 1.4px);
+    background-size: 20px 20px;
+    opacity: 0.18;
+  }
+
+  .prayer-card > * {
+    position: relative;
+  }
+
+  .prayer-card--next {
+    background: var(--green);
+    color: #fff;
+    border-color: var(--green);
+  }
+
+  .prayer-card--next::before {
+    background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0 1.4px, transparent 1.4px);
+    opacity: 0.22;
+  }
+
+  .prayer-card-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.45rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+  }
+
+  .prayer-card-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .prayer-card-name {
+    font-family: "Playfair Display", serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+
+  .prayer-card-time {
+    font-family: "Lato", sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 700px) {
+    .prayer-times-meta {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+
+    .prayer-refresh-btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    .prayer-card {
+      padding: 0.85rem 1rem;
+    }
+
+    .prayer-card-name {
+      font-size: 0.98rem;
+    }
+
+    .prayer-card-time {
+      font-size: 1rem;
+    }
+  }
+
+  /* ── Islamic Calendar ── */
+  .islamic-calendar-hero {
+    background: var(--mocha);
+  }
+
+  .islamic-calendar-section {
+    background: var(--cream);
+    position: relative;
+  }
+
+  .islamic-calendar-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at center, rgba(169, 139, 118, 0.14) 0 1.6px, transparent 1.6px),
+      linear-gradient(45deg, rgba(169, 139, 118, 0.08) 25%, transparent 25%, transparent 75%, rgba(169, 139, 118, 0.08) 75%),
+      linear-gradient(-45deg, rgba(169, 139, 118, 0.08) 25%, transparent 25%, transparent 75%, rgba(169, 139, 118, 0.08) 75%);
+    background-size: 23px 23px, 32px 32px, 32px 32px;
+    opacity: 0.35;
+  }
+
+  .islamic-calendar-container {
+    position: relative;
+    max-width: 56rem;
+    margin-inline: auto;
+  }
+
+  .islamic-calendar-status {
+    text-align: center;
+    padding: 1.5rem 0;
+  }
+
+  .islamic-calendar-dates {
+    position: relative;
+    overflow: hidden;
+    background: var(--mocha);
+    color: var(--cream);
+    border-radius: var(--radius);
+    padding: 1.35rem 1.25rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+
+  .islamic-calendar-dates::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.18) 0 1.6px, transparent 1.6px),
+      linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.1) 75%),
+      linear-gradient(-45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.1) 75%);
+    background-size: 23px 23px, 32px 32px, 32px 32px;
+    opacity: 0.22;
+  }
+
+  .islamic-calendar-dates > * {
+    position: relative;
+  }
+
+  .islamic-calendar-hijri {
+    font-family: "Amiri", serif;
+    font-size: clamp(1.4rem, 4.5vw, 2rem);
+    line-height: 1.45;
+    margin: 0 0 0.45rem;
+    direction: rtl;
+  }
+
+  .islamic-calendar-gregorian {
+    font-family: "Lato", sans-serif;
+    font-size: 1rem;
+    margin: 0;
+    opacity: 0.92;
+  }
+
+  .islamic-calendar-events {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .calendar-card--featured,
+  .islamic-event-card--soon {
+    grid-column: 1 / -1;
+  }
+
+  .islamic-event-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    padding: 1.15rem 1.2rem;
+    box-shadow: var(--shadow);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .islamic-event-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at center, rgba(169, 139, 118, 0.1) 0 1.4px, transparent 1.4px);
+    background-size: 20px 20px;
+    opacity: 0.16;
+  }
+
+  .islamic-event-card > * {
+    position: relative;
+  }
+
+  .islamic-event-card--future {
+    background: #fff;
+    color: var(--ink);
+    border: 1px solid rgba(191, 162, 140, 0.65);
+  }
+
+  .islamic-event-card--today {
+    background: var(--mocha);
+    color: #fff;
+    border: 1px solid var(--mocha);
+  }
+
+  .islamic-event-card--today::before {
+    background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0 1.4px, transparent 1.4px);
+    opacity: 0.2;
+  }
+
+  .islamic-event-card--past {
+    background: rgba(255, 255, 255, 0.55);
+    color: var(--muted);
+    border: 1px solid rgba(191, 162, 140, 0.4);
+    opacity: 0.85;
+  }
+
+  .islamic-event-card--past .islamic-event-countdown {
+    color: var(--muted);
+  }
+
+  .islamic-event-card--soon {
+    background: var(--green);
+    color: #fff;
+    border: 1px solid var(--green);
+  }
+
+  .islamic-event-card--soon::before {
+    background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0 1.4px, transparent 1.4px);
+    opacity: 0.2;
+  }
+
+  .islamic-event-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.55rem;
+    padding: 0.22rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+  }
+
+  .islamic-event-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .islamic-event-name {
+    font-family: "Playfair Display", serif;
+    font-size: 1.15rem;
+    margin: 0;
+    flex: 1 1 12rem;
+  }
+
+  .islamic-event-countdown {
+    font-family: "Playfair Display", serif;
+    font-size: clamp(1.15rem, 3.5vw, 1.45rem);
+    font-weight: 700;
+    color: var(--mocha);
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .islamic-event-countdown--today {
+    color: var(--green);
+  }
+
+  .islamic-event-card--today .islamic-event-countdown,
+  .islamic-event-card--soon .islamic-event-countdown {
+    color: #fff;
+  }
+
+  .islamic-event-card--today .islamic-event-countdown--today {
+    color: #e8f5e4;
+  }
+
+  .islamic-event-hijri-date {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin: 0 0 0.2rem;
+    color: inherit;
+    opacity: 0.9;
+  }
+
+  .islamic-event-gregorian-date {
+    font-size: 0.88rem;
+    margin: 0 0 0.65rem;
+    opacity: 0.85;
+  }
+
+  .islamic-event-description {
+    font-family: "Lato", sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+    flex: 1;
+  }
+
+  @media (max-width: 700px) {
+    .calendar-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .calendar-card--featured,
+    .islamic-event-card--soon {
+      grid-column: auto;
+    }
+
+    .islamic-event-card {
+      padding: 1rem;
+    }
+
+    .islamic-event-head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .islamic-event-countdown {
+      white-space: normal;
+    }
+
+    .dua-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hadith-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ── Scroll fade-in animations ── */
+  .fade-in-element {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .fade-in-element.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .fade-in-stagger > .fade-in-element:nth-child(1) {
+    transition-delay: 0s;
+  }
+
+  .fade-in-stagger > .fade-in-element:nth-child(2) {
+    transition-delay: 0.1s;
+  }
+
+  .fade-in-stagger > .fade-in-element:nth-child(3) {
+    transition-delay: 0.2s;
+  }
+
+  .fade-in-stagger > .fade-in-element:nth-child(4) {
+    transition-delay: 0.3s;
+  }
+
+  .fade-in-stagger > .fade-in-element:nth-child(5) {
+    transition-delay: 0.4s;
+  }
+
+  .fade-in-stagger > .fade-in-element:nth-child(6) {
+    transition-delay: 0.5s;
+  }
+
+  .fade-in-stagger > .fade-in-element:nth-child(7) {
+    transition-delay: 0.6s;
+  }
+
+  .fade-in-stagger > .fade-in-element:nth-child(8) {
+    transition-delay: 0.7s;
+  }
+
+  .fade-in-stagger > .fade-in-element:nth-child(9) {
+    transition-delay: 0.8s;
+  }
+
+  .fade-in-stagger > .fade-in-element:nth-child(10) {
+    transition-delay: 0.9s;
+  }
+
+  .fade-in-stagger > .fade-in-element:nth-child(11) {
+    transition-delay: 1s;
+  }
+
+  .fade-in-stagger > .fade-in-element:nth-child(12) {
+    transition-delay: 1.1s;
+  }
+
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in-element {
+      opacity: 1;
+      transform: none;
+      transition: none;
     }
   }

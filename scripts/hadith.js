@@ -1,3 +1,5 @@
+import { observeFadeInElements } from "./common.js";
+
 const hadiths = [
   {
     ar: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ",
@@ -35,7 +37,7 @@ const hadithGrid = document.getElementById("hadith-grid");
 
 hadiths.forEach((hadith) => {
   const card = document.createElement("article");
-  card.className = "entry-card";
+  card.className = "entry-card fade-in-element";
   card.innerHTML = `
     <p class="arabic">${hadith.ar}</p>
     <p>${hadith.en}</p>
@@ -43,3 +45,5 @@ hadiths.forEach((hadith) => {
   `;
   hadithGrid.appendChild(card);
 });
+
+observeFadeInElements(hadithGrid);

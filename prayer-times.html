@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Learn with Arwa | Quran</title>
+    <title>Learn with Arwa | Prayer Times</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,10 +20,10 @@
         </a>
         <ul class="nav-links">
           <li><a href="index.html">Home</a></li>
-          <li><a class="active" href="quran.html">Quran</a></li>
+          <li><a href="quran.html">Quran</a></li>
           <li><a href="hadith.html">Hadith</a></li>
           <li><a href="duas.html">Duas</a></li>
-          <li><a href="prayer-times.html">Prayer Times</a></li>
+          <li><a class="active" href="prayer-times.html">Prayer Times</a></li>
           <li><a href="islamic-calendar.html">Islamic Calendar</a></li>
           <li><a href="about.html">About</a></li>
         </ul>
@@ -31,45 +31,48 @@
     </header>
 
     <main>
-      <section class="page-hero dark-section">
+      <section class="page-hero prayer-times-hero dark-section">
         <div class="container">
-          <h1>Quran</h1>
-          <p>Read all 114 Surahs with Arabic and English translation.</p>
+          <h1>Prayer Times</h1>
+          <p>Today&apos;s salah times for your location, updated every day.</p>
         </div>
       </section>
 
-      <section class="section">
-        <div class="container">
-          <p class="eyebrow fade-in-element">All Surahs</p>
-          <div class="quran-search-wrap">
-            <label class="visually-hidden" for="surah-search">Search Surahs</label>
-            <div class="quran-search">
-              <svg
-                class="quran-search-icon"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="M20 20 16.5 16.5" />
-              </svg>
-              <input
-                type="search"
-                id="surah-search"
-                class="quran-search-input"
-                placeholder="Search by number, English, or Arabic name…"
-                autocomplete="off"
-                enterkeyhint="search"
-              />
-            </div>
+      <section class="section prayer-times-section">
+        <div class="container prayer-times-container">
+          <div id="prayer-times-status" class="prayer-times-status" role="status" aria-live="polite">
+            <p class="muted">Finding your location…</p>
           </div>
-          <p id="surah-search-empty" class="quran-search-empty" hidden>No results found</p>
-          <div id="surah-grid" class="quran-grid fade-in-stagger"></div>
+
+          <div id="prayer-times-panel" class="prayer-times-panel" hidden>
+            <p id="prayer-hijri-date" class="prayer-hijri-date arabic fade-in-element"></p>
+            <div class="prayer-times-meta fade-in-element">
+              <p id="prayer-location" class="prayer-location"></p>
+              <button type="button" id="prayer-refresh-location" class="btn btn-primary prayer-refresh-btn">
+                Refresh Location
+              </button>
+            </div>
+            <p id="prayer-countdown" class="prayer-countdown fade-in-element"></p>
+            <div class="prayer-clock-toggle" role="group" aria-label="Time format">
+              <button
+                type="button"
+                id="clock-format-12"
+                class="prayer-clock-toggle-btn is-active"
+                aria-pressed="true"
+              >
+                12hr
+              </button>
+              <button
+                type="button"
+                id="clock-format-24"
+                class="prayer-clock-toggle-btn"
+                aria-pressed="false"
+              >
+                24hr
+              </button>
+            </div>
+            <ul id="prayer-times-list" class="prayer-times-list fade-in-stagger"></ul>
+          </div>
         </div>
       </section>
     </main>
@@ -101,6 +104,6 @@
     </footer>
 
     <script type="module" src="scripts/common.js"></script>
-    <script type="module" src="scripts/quran.js"></script>
+    <script type="module" src="scripts/prayer-times.js"></script>
   </body>
 </html>

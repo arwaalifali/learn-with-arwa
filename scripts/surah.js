@@ -1,3 +1,5 @@
+import { observeFadeInElements } from "./common.js";
+
 const viewer = document.getElementById("surah-viewer");
 let followState = null;
 let followDockHandlersBound = false;
@@ -752,10 +754,12 @@ function renderSurah(arabicMeta, ayat) {
   const recitationUrl = getRecitationUrl(surahId);
   document.title = `Learn with Arwa | ${arabicMeta.englishName}`;
 
+  viewer.className = "surah-viewer fade-in-stagger";
+
   viewer.innerHTML = `
-    <h2>${arabicMeta.englishName} <span class="muted">(${arabicMeta.name})</span></h2>
-    <p class="muted">Surah ${surahId} • ${arabicMeta.numberOfAyahs} verses</p>
-    <div class="recitation-box">
+    <h2 class="fade-in-element">${arabicMeta.englishName} <span class="muted">(${arabicMeta.name})</span></h2>
+    <p class="muted fade-in-element">Surah ${surahId} • ${arabicMeta.numberOfAyahs} verses</p>
+    <div class="recitation-box fade-in-element">
       <p class="recitation-title">Quran Recitation (${selectedReciter.label})</p>
       <audio id="surah-audio" class="recitation-player" controls preload="none" src="${recitationUrl}"></audio>
       <p id="recitation-status" class="muted recitation-hint">Press play to listen to this surah recitation.</p>
@@ -772,7 +776,7 @@ function renderSurah(arabicMeta, ayat) {
     ${ayat
       .map(
         (ayah) => `
-          <article class="ayah ayah-clickable" id="ayah-${ayah.number}" data-ayah-number="${ayah.number}">
+          <article class="ayah ayah-clickable fade-in-element" id="ayah-${ayah.number}" data-ayah-number="${ayah.number}">
             <p class="ayah-ar arabic">${ayah.ar}</p>
             <p>${ayah.en}</p>
             <p class="muted">Ayah ${ayah.number}</p>
@@ -815,6 +819,7 @@ function renderSurah(arabicMeta, ayat) {
   updateFollowDockUI();
 
   applyReciterSelectionToUI(getSelectedReciterKey());
+  observeFadeInElements(viewer);
 }
 
 async function loadSurah() {

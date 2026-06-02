@@ -1,3 +1,5 @@
+import { observeFadeInElements } from "./common.js";
+
 const surahs = [
   [1, "الفاتحة", "Al-Fatihah", 7],
   [2, "البقرة", "Al-Baqarah", 286],
@@ -154,7 +156,7 @@ function filterSurahs(query) {
 
 surahs.forEach((surah) => {
   const card = document.createElement("a");
-  card.className = "surah-card";
+  card.className = "surah-card fade-in-element";
   card.href = `surah.html?id=${surah[0]}`;
   card.setAttribute("aria-label", `Open Surah ${surah[2]}`);
   card.dataset.number = String(surah[0]);
@@ -167,6 +169,8 @@ surahs.forEach((surah) => {
   `;
   surahGrid.appendChild(card);
 });
+
+observeFadeInElements(surahGrid);
 
 if (searchInput) {
   searchInput.addEventListener("input", (event) => {

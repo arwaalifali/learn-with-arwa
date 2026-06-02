@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Learn with Arwa | Quran</title>
+    <title>Learn with Arwa | Islamic Calendar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,56 +20,37 @@
         </a>
         <ul class="nav-links">
           <li><a href="index.html">Home</a></li>
-          <li><a class="active" href="quran.html">Quran</a></li>
+          <li><a href="quran.html">Quran</a></li>
           <li><a href="hadith.html">Hadith</a></li>
           <li><a href="duas.html">Duas</a></li>
           <li><a href="prayer-times.html">Prayer Times</a></li>
-          <li><a href="islamic-calendar.html">Islamic Calendar</a></li>
+          <li><a class="active" href="islamic-calendar.html">Islamic Calendar</a></li>
           <li><a href="about.html">About</a></li>
         </ul>
       </div>
     </header>
 
     <main>
-      <section class="page-hero dark-section">
+      <section class="page-hero islamic-calendar-hero dark-section">
         <div class="container">
-          <h1>Quran</h1>
-          <p>Read all 114 Surahs with Arabic and English translation.</p>
+          <h1>Islamic Calendar</h1>
+          <p>Important Islamic dates and countdowns for the Hijri year.</p>
         </div>
       </section>
 
-      <section class="section">
-        <div class="container">
-          <p class="eyebrow fade-in-element">All Surahs</p>
-          <div class="quran-search-wrap">
-            <label class="visually-hidden" for="surah-search">Search Surahs</label>
-            <div class="quran-search">
-              <svg
-                class="quran-search-icon"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="M20 20 16.5 16.5" />
-              </svg>
-              <input
-                type="search"
-                id="surah-search"
-                class="quran-search-input"
-                placeholder="Search by number, English, or Arabic name…"
-                autocomplete="off"
-                enterkeyhint="search"
-              />
-            </div>
+      <section class="section islamic-calendar-section">
+        <div class="container islamic-calendar-container">
+          <div id="islamic-calendar-status" class="islamic-calendar-status" role="status" aria-live="polite">
+            <p class="muted">Loading Islamic calendar…</p>
           </div>
-          <p id="surah-search-empty" class="quran-search-empty" hidden>No results found</p>
-          <div id="surah-grid" class="quran-grid fade-in-stagger"></div>
+
+          <div id="islamic-calendar-panel" class="islamic-calendar-panel" hidden>
+            <header class="islamic-calendar-dates fade-in-element">
+              <p id="islamic-calendar-hijri" class="islamic-calendar-hijri arabic"></p>
+              <p id="islamic-calendar-gregorian" class="islamic-calendar-gregorian"></p>
+            </header>
+            <ul id="islamic-calendar-events" class="islamic-calendar-events calendar-grid fade-in-stagger"></ul>
+          </div>
         </div>
       </section>
     </main>
@@ -101,6 +82,6 @@
     </footer>
 
     <script type="module" src="scripts/common.js"></script>
-    <script type="module" src="scripts/quran.js"></script>
+    <script type="module" src="scripts/islamic-calendar.js"></script>
   </body>
 </html>
