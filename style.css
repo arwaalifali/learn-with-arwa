@@ -253,6 +253,17 @@
     color: var(--muted);
     font-weight: 700;
   }
+
+  .container > .eyebrow:has(+ .verse-box),
+  .container > .eyebrow:has(+ .daily-box) {
+    font-family: "Playfair Display", serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: right;
+    text-transform: none;
+    letter-spacing: normal;
+    width: 100%;
+  }
   
   .verse-box {
     background: rgba(255, 255, 255, 0.45);

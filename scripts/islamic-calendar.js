@@ -166,25 +166,29 @@ function gregorianDateFromSchedule(year, entry) {
   return startOfDay(new Date(year, entry.month, entry.day));
 }
 
-function formatCountdown(daysUntil) {
+function getNextOccurrenceInfo(event, today) {
+  const entry2026 = event.schedule[2026];
+  const date2026 = gregorianDateFromSchedule(2026, entry2026);
+
+  if (today < date2026) {
+    return { date: date2026, label: entry2026.label };
+  }
+
+  const date2027 = new Date(date2026);
+  date2027.setFullYear(2027);
+  const nextDate = startOfDay(date2027);
+  const label2027 = entry2026.label.replace(/\b2026\b/g, "2027");
+
+  return { date: nextDate, label: label2027 };
+}
+
+function formatUpcomingCountdown(daysUntil) {
   if (daysUntil === 0) return "Today!";
-  if (daysUntil < 0) {
-    const daysAgo = Math.abs(daysUntil);
-    return `${daysAgo} day${daysAgo === 1 ? "" : "s"} ago`;
-  }
+  return `In ${daysUntil} day${daysUntil === 1 ? "" : "s"}`;
+}
 
-  if (daysUntil < 30) {
-    return `In ${daysUntil} day${daysUntil === 1 ? "" : "s"}`;
-  }
-
-  const months = Math.floor(daysUntil / 30);
-  const remainder = daysUntil % 30;
-
-  if (remainder === 0) {
-    return `In ${months} month${months === 1 ? "" : "s"}`;
-  }
-
-  return `In ${months} month${months === 1 ? "" : "s"} ${remainder} day${remainder === 1 ? "" : "s"}`;
+function formatPastCountdown(daysUntilNext) {
+  return `Coming back in ${daysUntilNext} day${daysUntilNext === 1 ? "" : "s"}`;
 }
 
 function parseGregorianFromApi(gregorian) {
@@ -203,26 +207,31 @@ function buildEventsForDisplay() {
     const entry = event.schedule[scheduleYear];
     const gregorianDate = gregorianDateFromSchedule(scheduleYear, entry);
     const daysUntil = Math.round((gregorianDate - today) / 86400000);
+    const nextOccurrence = getNextOccurrenceInfo(event, today);
+    const daysUntilNext = Math.round((nextOccurrence.date - today) / 86400000);
 
     return {
       event,
       gregorianDate,
       daysUntil,
+      daysUntilNext,
+      nextGregorianLabel: nextOccurrence.label,
       hijriLabel: event.hijriLabel,
       gregorianLabel: entry.label,
       scheduleYear,
+      isPastThisYear: daysUntil < 0,
     };
   });
 }
 
 function sortEvents(events) {
-  return [...events].sort((a, b) => {
-    const aPast = a.daysUntil < 0;
-    const bPast = b.daysUntil < 0;
-    if (aPast !== bPast) return aPast ? 1 : -1;
-    if (!aPast) return a.daysUntil - b.daysUntil;
-    return b.daysUntil - a.daysUntil;
-  });
+  const upcoming = events.filter((item) => item.daysUntil >= 0);
+  const past = events.filter((item) => item.isPastThisYear);
+
+  upcoming.sort((a, b) => a.daysUntil - b.daysUntil);
+  past.sort((a, b) => a.daysUntilNext - b.daysUntilNext);
+
+  return [...upcoming, ...past];
 }
 
 function renderHeader(hijri, gregorian) {
@@ -278,13 +287,22 @@ function renderEvents(events) {
     .map((item) => {
       let cardClass = "islamic-event-card fade-in-element islamic-event-card--future";
       let badge = "";
+      let yearLabel = "";
+      let countdownText = formatUpcomingCountdown(item.daysUntil);
+      let gregorianDisplay = item.gregorianLabel;
+      let cardStyle = "";
 
-      if (item.daysUntil < 0) {
-        cardClass = "islamic-event-card islamic-event-card--past";
+      if (item.isPastThisYear) {
+        cardClass = "islamic-event-card fade-in-element islamic-event-card--past";
+        yearLabel =
+          '<span class="islamic-event-year-label muted">Next year</span>';
+        countdownText = formatPastCountdown(item.daysUntilNext);
+        gregorianDisplay = item.nextGregorianLabel;
+        cardStyle = ' style="border-color: #d4d4d4;"';
       } else if (item.daysUntil === 0) {
-        cardClass = "islamic-event-card islamic-event-card--today";
+        cardClass = "islamic-event-card fade-in-element islamic-event-card--today";
       } else if (!comingSoonAssigned) {
-        cardClass = "islamic-event-card islamic-event-card--soon";
+        cardClass = "islamic-event-card fade-in-element islamic-event-card--soon";
         badge = '<span class="islamic-event-badge">Coming Soon</span>';
         comingSoonAssigned = true;
       }
@@ -295,14 +313,15 @@ function renderEvents(events) {
           : "islamic-event-countdown";
 
       return `
-        <li class="${cardClass}">
+        <li class="${cardClass}"${cardStyle}>
+          ${yearLabel}
           ${badge}
           <div class="islamic-event-head">
             <h2 class="islamic-event-name">${item.event.name}</h2>
-            <p class="${countdownClass}">${formatCountdown(item.daysUntil)}</p>
+            <p class="${countdownClass}">${countdownText}</p>
           </div>
           <p class="islamic-event-hijri-date">${item.hijriLabel}</p>
-          <p class="islamic-event-gregorian-date">${item.gregorianLabel}</p>
+          <p class="islamic-event-gregorian-date">${gregorianDisplay}</p>
           <p class="islamic-event-description">${item.event.description}</p>
         </li>
       `;
