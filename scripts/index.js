@@ -1,5 +1,4 @@
 const TOTAL_QURAN_AYAHS = 6236;
-/** Offset so Ayah of the Day never matches Verse of the Day (half the mushaf). */
 const AYAH_OF_DAY_OFFSET = 3118;
 const DUAS_OF_DAY = [
   {
@@ -154,25 +153,73 @@ const DUAS_OF_DAY = [
   },
 ];
 
-const verseArEl = document.getElementById("verse-of-day-ar");
-const verseEnEl = document.getElementById("verse-of-day-en");
-const verseRefEl = document.getElementById("verse-of-day-ref");
 const ayahArEl = document.getElementById("ayah-of-day-ar");
 const ayahEnEl = document.getElementById("ayah-of-day-en");
 const ayahRefEl = document.getElementById("ayah-of-day-ref");
 const duaArEl = document.getElementById("dua-of-day-ar");
 const duaEnEl = document.getElementById("dua-of-day-en");
 const duaRefEl = document.getElementById("dua-of-day-ref");
+const hadithArEl = document.getElementById("hadith-of-day-ar");
+const hadithEnEl = document.getElementById("hadith-of-day-en");
+const hadithSourceEl = document.getElementById("hadith-of-day-source");
+
+const HADITHS_OF_DAY = [
+  { ar: "خَيْرُكُمْ أَحْسَنُكُمْ خُلُقًا", en: "The best among you are those who have the best manners and character", source: "Sahih Bukhari" },
+  { ar: "ارْحَمُوا مَنْ فِي الْأَرْضِ يَرْحَمْكُمْ مَنْ فِي السَّمَاءِ", en: "Show mercy to those on earth and the One in the heavens will show mercy to you", source: "Tirmidhi" },
+  { ar: "الْكَلِمَةُ الطَّيِّبَةُ صَدَقَةٌ", en: "A good word is charity", source: "Sahih Bukhari" },
+  { ar: "أَحَبُّ الْأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ", en: "The most beloved of deeds to Allah are those done consistently even if they are small", source: "Sahih Bukhari" },
+  { ar: "تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ صَدَقَةٌ", en: "Smiling at your brother is charity", source: "Tirmidhi" },
+  { ar: "لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ", en: "None of you truly believes until he loves for his brother what he loves for himself", source: "Sahih Bukhari" },
+  { ar: "لَيْسَ الشَّدِيدُ بِالصُّرَعَةِ إِنَّمَا الشَّدِيدُ الَّذِي يَمْلِكُ نَفْسَهُ عِنْدَ الْغَضَبِ", en: "The strong person is the one who can control himself when he is angry", source: "Sahih Bukhari" },
+  { ar: "مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ", en: "Whoever believes in Allah and the Last Day should speak good or remain silent", source: "Sahih Bukhari" },
+  { ar: "أَوَّلُ مَا يُحَاسَبُ بِهِ الْعَبْدُ الصَّلَاةُ", en: "The first matter that the slave will be brought to account for on the Day of Judgement is the prayer", source: "Tirmidhi" },
+  { ar: "أَقْرَبُ مَا يَكُونُ الْعَبْدُ مِنْ رَبِّهِ وَهُوَ سَاجِدٌ", en: "The closest a servant is to his Lord is when he is in prostration", source: "Sahih Muslim" },
+  { ar: "طَلَبُ الْعِلْمِ فَرِيضَةٌ عَلَى كُلِّ مُسْلِمٍ", en: "Seeking knowledge is an obligation upon every Muslim", source: "Ibn Majah" },
+  { ar: "مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ طَرِيقًا إِلَى الْجَنَّةِ", en: "Whoever follows a path in pursuit of knowledge Allah will make easy for him a path to Paradise", source: "Sahih Muslim" },
+  { ar: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ", en: "The best of you are those who learn the Quran and teach it", source: "Sahih Bukhari" },
+  { ar: "إِذَا مَاتَ الْإِنْسَانُ انْقَطَعَ عَمَلُهُ إِلَّا مِنْ ثَلَاثَةٍ", en: "When a person dies his deeds come to an end except for three: ongoing charity, knowledge that is benefited from, and a righteous child who prays for him", source: "Sahih Muslim" },
+  { ar: "الْجَنَّةُ تَحْتَ أَقْدَامِ الْأُمَّهَاتِ", en: "Paradise lies at the feet of your mother", source: "Ahmad" },
+  { ar: "خَيْرُكُمْ خَيْرُكُمْ لِأَهْلِهِ", en: "The best of you is the one who is best to his family", source: "Tirmidhi" },
+  { ar: "مَا نَحَلَ وَالِدٌ وَلَدًا مِنْ نَحْلٍ أَفْضَلَ مِنْ أَدَبٍ حَسَنٍ", en: "A father gives his child nothing better than a good education", source: "Tirmidhi" },
+  { ar: "مَنْ أَحَبَّ أَنْ يُبْسَطَ لَهُ فِي رِزْقِهِ فَلْيَصِلْ رَحِمَهُ", en: "Whoever wishes to have his provision expanded should maintain his family ties", source: "Sahih Bukhari" },
+  { ar: "الْيَدُ الْعُلْيَا خَيْرٌ مِنَ الْيَدِ السُّفْلَى", en: "The upper hand is better than the lower hand", source: "Sahih Bukhari" },
+  { ar: "مَا نَقَصَتْ صَدَقَةٌ مِنْ مَالٍ", en: "Charity does not decrease wealth", source: "Sahih Muslim" },
+  { ar: "اتَّقُوا النَّارَ وَلَوْ بِشِقِّ تَمْرَةٍ", en: "Save yourself from hellfire by giving even half a date in charity", source: "Sahih Bukhari" },
+  { ar: "كُلُّ مَعْرُوفٍ صَدَقَةٌ", en: "Every act of goodness is charity", source: "Sahih Muslim" },
+  { ar: "السَّخِيُّ قَرِيبٌ مِنَ اللَّهِ قَرِيبٌ مِنَ الْجَنَّةِ", en: "The generous person is close to Allah close to Paradise and far from Hell", source: "Tirmidhi" },
+  { ar: "عَجَبًا لِأَمْرِ الْمُؤْمِنِ إِنَّ أَمْرَهُ كُلَّهُ خَيْرٌ", en: "How wonderful is the affair of the believer for it is all good", source: "Sahih Muslim" },
+  { ar: "كُنْ فِي الدُّنْيَا كَأَنَّكَ غَرِيبٌ أَوْ عَابِرُ سَبِيلٍ", en: "Be in this world as though you were a stranger or a wayfarer", source: "Sahih Bukhari" },
+  { ar: "مَنْ لَا يَشْكُرُ النَّاسَ لَا يَشْكُرُ اللَّهَ", en: "Whoever is not grateful to people is not grateful to Allah", source: "Abu Dawud" },
+  { ar: "عَلَيْكُمْ بِالصِّدْقِ فَإِنَّ الصِّدْقَ يَهْدِي إِلَى الْبِرِّ", en: "Truthfulness leads to righteousness and righteousness leads to Paradise", source: "Sahih Bukhari" },
+  { ar: "آيَةُ الْمُنَافِقِ ثَلَاثٌ إِذَا حَدَّثَ كَذَبَ", en: "The signs of a hypocrite are three: when he speaks he lies when he makes a promise he breaks it and when he is entrusted he betrays", source: "Sahih Bukhari" },
+  { ar: "مَنْ غَشَّنَا فَلَيْسَ مِنَّا", en: "Whoever cheats us is not one of us", source: "Sahih Muslim" },
+  { ar: "مَثَلُ الَّذِي يَذْكُرُ رَبَّهُ وَالَّذِي لَا يَذْكُرُ مَثَلُ الْحَيِّ وَالْمَيِّتِ", en: "The comparison of the one who remembers Allah and the one who does not is like the living and the dead", source: "Sahih Bukhari" },
+  { ar: "كَلِمَتَانِ خَفِيفَتَانِ عَلَى اللِّسَانِ ثَقِيلَتَانِ فِي الْمِيزَانِ", en: "Two words are light on the tongue heavy on the scales and beloved to the Most Merciful SubhanAllahi wa bihamdihi SubhanAllahil Azeem", source: "Sahih Bukhari" },
+  { ar: "أَفْضَلُ الذِّكْرِ لَا إِلَهَ إِلَّا اللَّهُ", en: "The best dhikr is La ilaha illallah", source: "Tirmidhi" },
+  { ar: "اقْرَءُوا الْقُرْآنَ فَإِنَّهُ يَأْتِي يَوْمَ الْقِيَامَةِ شَفِيعًا لِأَصْحَابِهِ", en: "Read the Quran for it will come as an intercessor for its reciters on the Day of Resurrection", source: "Sahih Muslim" },
+  { ar: "مَنْ قَرَأَ حَرْفًا مِنْ كِتَابِ اللَّهِ فَلَهُ بِهِ حَسَنَةٌ", en: "Whoever recites a letter from the Book of Allah he will be credited with a good deed and a good deed gets a ten-fold reward", source: "Tirmidhi" },
+  { ar: "زَيِّنُوا الْقُرْآنَ بِأَصْوَاتِكُمْ", en: "Adorn the Quran with your voices", source: "Abu Dawud" },
+  { ar: "يَسِّرُوا وَلَا تُعَسِّرُوا", en: "Make things easy and do not make them difficult", source: "Sahih Bukhari" },
+  { ar: "صَلُّوا كَمَا رَأَيْتُمُونِي أُصَلِّي", en: "Pray as you have seen me praying", source: "Sahih Bukhari" },
+  { ar: "الطُّهُورُ شَطْرُ الْإِيمَانِ", en: "Cleanliness is half of faith", source: "Sahih Muslim" },
+  { ar: "إِنَّ اللَّهَ جَمِيلٌ يُحِبُّ الْجَمَالَ", en: "Allah is beautiful and loves beauty", source: "Sahih Muslim" },
+  { ar: "الدُّنْيَا سِجْنُ الْمُؤْمِنِ وَجَنَّةُ الْكَافِرِ", en: "The world is a prison for the believer and a paradise for the disbeliever", source: "Sahih Muslim" },
+  { ar: "لَا تُسْرِفْ فِي الْمَاءِ وَلَوْ كُنْتَ عَلَى نَهَرٍ جَارٍ", en: "Do not waste water even if you are at a flowing river", source: "Ibn Majah" },
+  { ar: "أَطْعِمُوا الْجَائِعَ وَعُودُوا الْمَرِيضَ", en: "Feed the hungry visit the sick and free the captive", source: "Sahih Bukhari" },
+  { ar: "أَفْضَلُ الصَّدَقَةِ أَنْ تَصَّدَّقَ وَأَنْتَ صَحِيحٌ", en: "The best of charity is that which is given when you yourself are in need", source: "Sahih Bukhari" },
+  { ar: "مَنْ نَفَّسَ عَنْ مُؤْمِنٍ كُرْبَةً نَفَّسَ اللَّهُ عَنْهُ", en: "Whoever removes a worldly hardship from a believer Allah will remove one of the hardships of the Day of Resurrection from him", source: "Sahih Muslim" },
+  { ar: "الْمُسْلِمُ مَنْ سَلِمَ الْمُسْلِمُونَ مِنْ لِسَانِهِ وَيَدِهِ", en: "A Muslim is the one from whose tongue and hand other Muslims are safe", source: "Sahih Bukhari" },
+  { ar: "لَا تَحْقِرَنَّ مِنَ الْمَعْرُوفِ شَيْئًا", en: "Do not belittle any good deed even meeting your brother with a cheerful face", source: "Sahih Muslim" },
+  { ar: "أَكْمَلُ الْمُؤْمِنِينَ إِيمَانًا أَحْسَنُهُمْ خُلُقًا", en: "The most perfect believer in faith is the one who is best in moral character", source: "Tirmidhi" },
+  { ar: "لَا حَسَدَ إِلَّا فِي اثْنَتَيْنِ", en: "Envy is not permitted except in two cases a man whom Allah has given wealth and he spends it righteously and a man whom Allah has given knowledge and he acts on it and teaches it", source: "Sahih Bukhari" },
+  { ar: "إِنَّ اللَّهَ لَا يَنْظُرُ إِلَى صُوَرِكُمْ وَأَمْوَالِكُمْ", en: "Allah does not look at your appearance or your wealth but He looks at your hearts and your deeds", source: "Sahih Muslim" },
+  { ar: "مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيُكْرِمْ ضَيْفَهُ", en: "Whoever believes in Allah and the Last Day let him honour his guest", source: "Sahih Bukhari" },
+];
 
 /** Day of year from local midnight (0 on 1 Jan). Updates when the calendar date changes. */
 function getDayOfYear(date = new Date()) {
   const start = new Date(date.getFullYear(), 0, 1);
   return Math.floor((date - start) / (24 * 60 * 60 * 1000));
-}
-
-function getVerseNumberForToday(date = new Date()) {
-  const dayOfYear = getDayOfYear(date);
-  return (dayOfYear % TOTAL_QURAN_AYAHS) + 1;
 }
 
 function getAyahNumberForToday(date = new Date()) {
@@ -183,6 +230,19 @@ function getAyahNumberForToday(date = new Date()) {
 function getDuaForToday(date = new Date()) {
   const dayOfYear = getDayOfYear(date);
   return DUAS_OF_DAY[dayOfYear % DUAS_OF_DAY.length];
+}
+
+function getHadithForToday(date = new Date()) {
+  const dayOfYear = getDayOfYear(date);
+  return HADITHS_OF_DAY[dayOfYear % 50];
+}
+
+function renderHadithOfDay(date = new Date()) {
+  if (!hadithArEl || !hadithEnEl || !hadithSourceEl) return;
+  const hadith = getHadithForToday(date);
+  hadithArEl.textContent = hadith.ar;
+  hadithEnEl.textContent = hadith.en;
+  hadithSourceEl.textContent = hadith.source;
 }
 
 function renderDuaOfDay(date = new Date()) {
@@ -251,16 +311,6 @@ async function loadQuranDayBlock(arEl, enEl, refEl, ayahNumber, errorLabel) {
   }
 }
 
-function loadVerseOfDay(date = new Date()) {
-  return loadQuranDayBlock(
-    verseArEl,
-    verseEnEl,
-    verseRefEl,
-    getVerseNumberForToday(date),
-    "verse"
-  );
-}
-
 function loadAyahOfDay(date = new Date()) {
   return loadQuranDayBlock(
     ayahArEl,
@@ -280,18 +330,17 @@ function msUntilNextLocalMidnight() {
 function scheduleMidnightRefresh() {
   const delay = msUntilNextLocalMidnight();
   window.setTimeout(() => {
-    renderDuaOfDay();
-    loadVerseOfDay();
+    renderHadithOfDay();
     loadAyahOfDay();
+    renderDuaOfDay();
     scheduleMidnightRefresh();
   }, delay);
 }
 
 function initHomeDailySections() {
-  if (!verseArEl && !ayahArEl && !duaArEl) return;
-  renderDuaOfDay();
-  loadVerseOfDay();
+  renderHadithOfDay();
   loadAyahOfDay();
+  renderDuaOfDay();
   scheduleMidnightRefresh();
 }
 
