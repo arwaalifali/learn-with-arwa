@@ -37,9 +37,11 @@
         <div class="container">
           <a class="back-link" href="quran.html">← Back to all Surahs</a>
 
-          <!-- Reciter Picker (always visible, above content) -->
-          <div class="reciter-picker-box fade-in-element">
-            <label class="reciter-picker-title" for="reciter-picker-select">Choose Reciter</label>
+          <!-- Audio only: choose reciter + play the full-surah recitation -->
+          <div class="reciter-picker-box audio-only-box fade-in-element">
+            <p class="reciter-picker-title">Audio only</p>
+            <div class="audio-only-reciter-row">
+            <label class="audio-only-reciter-label" for="reciter-picker-select">Choose reciter</label>
             <select id="reciter-picker-select" class="reciter-picker-select" aria-label="Choose reciter">
               <option value="husri">Mahmoud Al-Husri</option>
               <option value="abdulbasit">Abdul Basit Abdul Samad</option>
@@ -52,6 +54,8 @@
               <option value="afasy">Mishary Al-Afasy</option>
               <option value="hanirrifai">Hani Ar-Rifai</option>
             </select>
+            </div>
+            <div id="audio-only-player" class="recitation-box"></div>
           </div>
 
           <section id="surah-viewer" class="surah-viewer" aria-live="polite"></section>
@@ -60,6 +64,21 @@
     </main>
 
     <div class="follow-dock" role="region" aria-label="Follow mode recitation">
+      <button type="button" id="follow-dock-handle" class="follow-dock-handle" aria-label="Minimize player">
+        <span class="follow-dock-grip"></span>
+      </button>
+      <div class="follow-dock-mini" id="follow-dock-mini">
+        <button type="button" id="follow-mini-play" class="follow-dock-mini-play" aria-label="Play">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <div class="follow-dock-mini-info">
+          <span class="follow-dock-mini-surah" id="follow-mini-surah">—</span>
+          <span class="follow-dock-mini-ayah" id="follow-mini-ayah">Ayah — of —</span>
+        </div>
+        <button type="button" id="follow-mini-expand" class="follow-dock-mini-expand" aria-label="Expand player">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+        </button>
+      </div>
       <div class="container follow-dock-inner">
         <div class="follow-dock-info">
           <div class="follow-dock-info-text">
@@ -69,22 +88,19 @@
         </div>
         <div class="follow-dock-transport" role="group" aria-label="Playback controls">
           <button type="button" id="follow-btn-prev" class="follow-dock-btn" title="Previous ayah" aria-label="Previous ayah">
-            ⏮
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 6h2v12H7z"/><path d="M18 6v12l-9-6z"/></svg>
           </button>
           <button type="button" id="follow-btn-rewind" class="follow-dock-btn" title="Back 5 ayahs" aria-label="Rewind five ayahs">
-            ⏪
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 6v12l-8-6z"/><path d="M21 6v12l-8-6z"/></svg>
           </button>
           <button type="button" id="follow-btn-play-pause" class="follow-dock-btn follow-dock-btn--primary" title="Play or pause" aria-label="Play">
-            ⏯
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
           </button>
           <button type="button" id="follow-btn-forward" class="follow-dock-btn" title="Forward 5 ayahs" aria-label="Forward five ayahs">
-            ⏩
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6l8 6-8 6z"/><path d="M13 6l8 6-8 6z"/></svg>
           </button>
           <button type="button" id="follow-btn-next" class="follow-dock-btn" title="Next ayah" aria-label="Next ayah">
-            ⏭
-          </button>
-          <button type="button" id="follow-btn-stop" class="follow-dock-btn" title="Stop" aria-label="Stop and reset">
-            ⏹
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 6l9 6-9 6z"/><path d="M15 6h2v12h-2z"/></svg>
           </button>
         </div>
         <div class="follow-dock-reciter-wrap">
@@ -103,7 +119,30 @@
           </select>
         </div>
       </div>
-      <p id="follow-dock-status" class="follow-dock-status muted">Follow mode is ready.</p>
+      <div class="container follow-dock-options">
+        <div class="follow-repeat" role="group" aria-label="Repeat mode">
+          <span class="follow-opt-label">Repeat</span>
+          <div class="follow-repeat-seg">
+            <button type="button" class="follow-repeat-btn is-on" data-repeat="off" aria-pressed="true">Off</button>
+            <button type="button" class="follow-repeat-btn" data-repeat="surah" aria-pressed="false">Surah</button>
+            <button type="button" class="follow-repeat-btn" data-repeat="ayah" aria-pressed="false">Ayah</button>
+            <button type="button" class="follow-repeat-btn" data-repeat="range" aria-pressed="false">Range</button>
+          </div>
+          <span class="follow-ayah-inputs" id="follow-ayah-inputs" hidden>
+            <label>Ayah <input type="number" id="follow-ayah-num" class="follow-range-input" min="1" value="1" inputmode="numeric" aria-label="Repeat which ayah" /></label>
+          </span>
+          <span class="follow-range-inputs" id="follow-range-inputs" hidden>
+            <label>From <input type="number" id="follow-range-from" class="follow-range-input" min="1" value="1" inputmode="numeric" aria-label="Repeat from ayah" /></label>
+            <label>To <input type="number" id="follow-range-to" class="follow-range-input" min="1" value="7" inputmode="numeric" aria-label="Repeat to ayah" /></label>
+          </span>
+        </div>
+        <label class="follow-translation-toggle">
+          <span>Show translation</span>
+          <input type="checkbox" id="follow-translation-checkbox" class="follow-switch-input" checked />
+          <span class="follow-switch" aria-hidden="true"></span>
+        </label>
+      </div>
+      <p id="follow-dock-status" class="follow-dock-status muted"></p>
     </div>
 
     <footer class="site-footer dark-section fade-in-element">

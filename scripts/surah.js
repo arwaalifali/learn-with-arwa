@@ -50,12 +50,12 @@ const RECITERS = {
   minshawi: {
     label: "Muhammad Al-Minshawi",
     fullBaseUrl: "https://server10.mp3quran.net/minsh",
-    ayahFolder: "Minshawi_16kbps",
+    ayahFolder: "Minshawy_Murattal_128kbps",
   },
   afasy: {
     label: "Mishary Al-Afasy",
     fullBaseUrl: "https://server8.mp3quran.net/afs",
-    ayahFolder: "Mishary_Rashid_Alafasy_128kbps",
+    ayahFolder: "Alafasy_128kbps",
   },
   hanirrifai: {
     label: "Hani Ar-Rifai",
@@ -66,12 +66,41 @@ const RECITERS = {
 const DEFAULT_RECITER = "husri";
 const STORAGE_SELECTED_RECITER = "selected-reciter";
 const STORAGE_AUTOPLAY = "autoplay";
+const STORAGE_SHOW_TRANSLATION = "show-translation";
 const LAST_SURAH_ID = 114;
 
 const BISMILLAH_HEADER_HTML = "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ";
 
+/** Decorative octagon ayah-number marker holding the verse number (fits 1-3 digits). */
+function ayahNumberMarker(n) {
+  const digits = String(n).length;
+  const fs = digits >= 3 ? 12 : digits === 2 ? 15 : 18;
+  return `<svg class="ayah-nummark" width="30" height="30" viewBox="0 0 48 48" role="img" aria-label="Ayah ${n}"><polygon points="43.4,32 32,43.4 16,43.4 4.6,32 4.6,16 16,4.6 32,4.6 43.4,16" fill="#fff" stroke="#a98b76" stroke-width="1.5"/><text x="24" y="25" text-anchor="middle" dominant-baseline="central" font-family="Lato, sans-serif" font-size="${fs}" font-weight="700" fill="#5e4632">${n}</text></svg>`;
+}
+
+/** Render the Arabic verse with its end marker glued to the last word so the
+    number never wraps onto a line by itself — the last word drops down with it. */
+function arabicWithMarker(ar, n) {
+  const marker = ayahNumberMarker(n);
+  const text = (ar || "").trimEnd();
+  const lastSpace = text.lastIndexOf(" ");
+  if (lastSpace === -1) {
+    return `<span class="ayah-nowrap">${text}${marker}</span>`;
+  }
+  const head = text.slice(0, lastSpace);
+  const lastWord = text.slice(lastSpace + 1);
+  return `${head} <span class="ayah-nowrap">${lastWord}${marker}</span>`;
+}
+
 /** Exact Bismillah form to strip when it matches Ayah 1 text (plus Uthmani API variant via regex below). */
 const BISMILLAH_AYAH_PREFIX_PLAIN = "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ";
+
+/** Map the API revelation type to a Makki/Madani label + style class. */
+function revelationInfo(type) {
+  if (type === "Meccan") return { label: "Makki", cls: "makki" };
+  if (type === "Medinan") return { label: "Madani", cls: "madani" };
+  return { label: type || "", cls: "" };
+}
 
 function surahShowsStandaloneBismillah(surahId) {
   return surahId !== 1 && surahId !== 9;
@@ -167,44 +196,108 @@ function setFollowStatus(text) {
   }
 }
 
+function setDockInfoText(surahText, ayahText) {
+  if (followDockSurahEl) followDockSurahEl.textContent = surahText;
+  if (followDockAyahEl) followDockAyahEl.textContent = ayahText;
+  const miniSurah = document.getElementById("follow-mini-surah");
+  const miniAyah = document.getElementById("follow-mini-ayah");
+  if (miniSurah) miniSurah.textContent = surahText;
+  if (miniAyah) miniAyah.textContent = ayahText;
+}
+
 function updateFollowDockInfo() {
-  if (!followDockSurahEl || !followDockAyahEl) return;
   if (!followState || !followState.ayat.length) {
-    followDockSurahEl.textContent = "—";
-    followDockAyahEl.textContent = "Ayah — of —";
+    setDockInfoText("—", "Ayah — of —");
     return;
   }
-  followDockSurahEl.textContent = followState.surahEnglishName || `Surah ${followState.surahId}`;
+  const surahText = followState.surahEnglishName || `Surah ${followState.surahId}`;
   const total = followState.ayat.length;
   if (followState.onBismillahIntro) {
-    followDockAyahEl.textContent = `Bismillah · Ayah 1 of ${total}`;
+    setDockInfoText(surahText, `Bismillah · Ayah 1 of ${total}`);
     return;
   }
   let idx = followState.currentIndex;
   if (idx >= total) idx = total - 1;
   if (idx < 0) idx = 0;
   const num = followState.ayat[idx]?.number ?? idx + 1;
-  followDockAyahEl.textContent = `Ayah ${num} of ${total}`;
+  setDockInfoText(surahText, `Ayah ${num} of ${total}`);
+}
+
+const PLAY_ICON_SVG = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>`;
+const PAUSE_ICON_SVG = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3v14H7z"/><path d="M14 5h3v14h-3z"/></svg>`;
+
+function setPlayPauseButtons(playing) {
+  const html = playing ? PAUSE_ICON_SVG : PLAY_ICON_SVG;
+  const label = playing ? "Pause" : "Play";
+  if (followPlayPauseBtn) {
+    followPlayPauseBtn.innerHTML = html;
+    followPlayPauseBtn.setAttribute("aria-label", label);
+  }
+  const miniPlay = document.getElementById("follow-mini-play");
+  if (miniPlay) {
+    miniPlay.innerHTML = html;
+    miniPlay.setAttribute("aria-label", label);
+  }
 }
 
 function updatePlayPauseButton() {
-  if (!followPlayPauseBtn) return;
   if (!followState) {
-    followPlayPauseBtn.textContent = "⏯";
-    followPlayPauseBtn.setAttribute("aria-label", "Play follow mode");
+    setPlayPauseButtons(false);
+    if (followPlayPauseBtn) followPlayPauseBtn.setAttribute("aria-label", "Play follow mode");
     return;
   }
   const playing =
     followState.isPlaying &&
     followState.currentAudio &&
     !followState.currentAudio.paused;
-  followPlayPauseBtn.textContent = playing ? "⏸" : "⏯";
-  followPlayPauseBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
+  setPlayPauseButtons(playing);
 }
 
 function updateFollowDockUI() {
   updateFollowDockInfo();
   updatePlayPauseButton();
+}
+
+let autoCollapseTimer = null;
+
+function isMobileDock() {
+  return window.matchMedia("(max-width: 700px)").matches;
+}
+
+function collapseDock() {
+  document.querySelector(".follow-dock")?.classList.add("is-collapsed");
+}
+
+function expandDock() {
+  document.querySelector(".follow-dock")?.classList.remove("is-collapsed");
+  if (autoCollapseTimer) {
+    clearTimeout(autoCollapseTimer);
+    autoCollapseTimer = null;
+  }
+}
+
+function toggleDock() {
+  const dock = document.querySelector(".follow-dock");
+  if (!dock) return;
+  if (dock.classList.contains("is-collapsed")) {
+    expandDock();
+  } else {
+    collapseDock();
+    if (autoCollapseTimer) {
+      clearTimeout(autoCollapseTimer);
+      autoCollapseTimer = null;
+    }
+  }
+}
+
+/** After playback starts on mobile, collapse the dock to the mini-bar. */
+function scheduleAutoCollapse() {
+  if (autoCollapseTimer) clearTimeout(autoCollapseTimer);
+  if (!isMobileDock()) return;
+  autoCollapseTimer = setTimeout(() => {
+    autoCollapseTimer = null;
+    if (followState && followState.isPlaying) collapseDock();
+  }, 3000);
 }
 
 function getSurahId() {
@@ -358,7 +451,7 @@ function onReciterChange(event) {
   const newReciter = RECITERS[newReciterKey];
   localStorage.setItem(STORAGE_SELECTED_RECITER, newReciterKey);
 
-  const titleEl = viewer.querySelector(".recitation-title");
+  const titleEl = document.querySelector(".recitation-title");
   if (titleEl) {
     titleEl.textContent = `Quran Recitation (${newReciter.label})`;
   }
@@ -575,14 +668,7 @@ function playFollowCurrentAyahAudio() {
   audio.addEventListener("ended", () => {
     if (!followState || !followState.isPlaying) return;
     if (followState.currentAudio !== audio) return;
-    followState.currentIndex += 1;
-    if (followState.currentIndex >= followState.ayat.length) {
-      handleSurahFollowComplete();
-      return;
-    }
-    const nextAyah = followState.ayat[followState.currentIndex];
-    setFollowActiveAyah(nextAyah.number);
-    playFollowCurrentAyahAudio();
+    advanceAfterAyahEnd();
   });
 
   followPlayTry(audio);
@@ -602,6 +688,7 @@ function onFollowPlayPauseClick() {
     followState.isPlaying = false;
     followState.currentAudio.pause();
     setFollowStatus("Follow mode paused.");
+    expandDock();
     updateFollowDockUI();
     return;
   }
@@ -617,17 +704,84 @@ function onFollowPlayPauseClick() {
     followPlayTry(followState.currentAudio);
     setFollowStatus("Follow mode playing.");
     updateFollowDockUI();
+    scheduleAutoCollapse();
     return;
   }
 
   followState.isPlaying = true;
   followState.reciterKey = getSelectedReciterKey();
-  if (followState.currentIndex >= followState.ayat.length) {
+  if (followState.repeatMode === "range") {
+    const fi = indexOfAyahNumber(followState.repeatFrom);
+    if (fi !== -1) {
+      followState.currentIndex = fi;
+      followState.bismillahIntroDone = true;
+      followState.onBismillahIntro = false;
+    }
+  } else if (followState.repeatMode === "ayah") {
+    const ai = indexOfAyahNumber(followState.repeatAyah);
+    if (ai !== -1) {
+      followState.currentIndex = ai;
+      followState.bismillahIntroDone = true;
+      followState.onBismillahIntro = false;
+    }
+  } else if (followState.currentIndex >= followState.ayat.length) {
     followState.currentIndex = 0;
   }
 
   playFollowCurrentAyahAudio();
   updateFollowDockUI();
+  scheduleAutoCollapse();
+}
+
+function indexOfAyahNumber(n) {
+  if (!followState) return -1;
+  return followState.ayat.findIndex((a) => a.number === Number(n));
+}
+
+function repeatBounds() {
+  const len = followState.ayat.length;
+  let firstIdx = 0;
+  let lastIdx = len - 1;
+  if (followState.repeatMode === "range") {
+    const fi = indexOfAyahNumber(followState.repeatFrom);
+    const li = indexOfAyahNumber(followState.repeatTo);
+    if (fi !== -1 && li !== -1 && fi <= li) {
+      firstIdx = fi;
+      lastIdx = li;
+    }
+  }
+  return { firstIdx, lastIdx };
+}
+
+/** Decide what plays after an ayah finishes, honouring the repeat mode. */
+function advanceAfterAyahEnd() {
+  if (followState.repeatMode === "ayah") {
+    const cur = followState.ayat[followState.currentIndex];
+    if (cur) setFollowActiveAyah(cur.number);
+    playFollowCurrentAyahAudio();
+    return;
+  }
+
+  const { firstIdx, lastIdx } = repeatBounds();
+  followState.currentIndex += 1;
+
+  if (followState.currentIndex > lastIdx) {
+    if (followState.repeatMode === "surah" || followState.repeatMode === "range") {
+      followState.currentIndex = firstIdx;
+      const a = followState.ayat[firstIdx];
+      if (a) setFollowActiveAyah(a.number);
+      playFollowCurrentAyahAudio();
+      return;
+    }
+    if (followState.currentIndex >= followState.ayat.length) {
+      handleSurahFollowComplete();
+      return;
+    }
+  }
+
+  const nextAyah = followState.ayat[followState.currentIndex];
+  setFollowActiveAyah(nextAyah.number);
+  playFollowCurrentAyahAudio();
 }
 
 function effectiveFollowIndex() {
@@ -683,21 +837,6 @@ function onFollowForwardClick() {
 function onFollowNextClick() {
   if (!followState) return;
   seekFollowToIndex(effectiveFollowIndex() + 1);
-}
-
-function onStopFollowClick() {
-  if (!followState) return;
-  followState.isPlaying = false;
-  followState.bismillahIntroDone = false;
-  followState.onBismillahIntro = false;
-  if (followState.currentAudio) {
-    followState.currentAudio.pause();
-    followState.currentAudio = null;
-  }
-  followState.currentIndex = 0;
-  clearFollowHighlight();
-  setFollowStatus("Follow mode stopped.");
-  updateFollowDockUI();
 }
 
 function jumpFollowToAyahNumber(ayahNumber) {
@@ -756,14 +895,22 @@ function renderSurah(arabicMeta, ayat) {
 
   viewer.className = "surah-viewer fade-in-stagger";
 
-  viewer.innerHTML = `
-    <h2 class="fade-in-element">${arabicMeta.englishName} <span class="muted">(${arabicMeta.name})</span></h2>
-    <p class="muted fade-in-element">Surah ${surahId} • ${arabicMeta.numberOfAyahs} verses</p>
-    <div class="recitation-box fade-in-element">
+  const audioOnlyPlayer = document.getElementById("audio-only-player");
+  if (audioOnlyPlayer) {
+    audioOnlyPlayer.innerHTML = `
       <p class="recitation-title">Quran Recitation (${selectedReciter.label})</p>
       <audio id="surah-audio" class="recitation-player" controls preload="none" src="${recitationUrl}"></audio>
       <p id="recitation-status" class="muted recitation-hint">Press play to listen to this surah recitation.</p>
-    </div>
+    `;
+  }
+
+  viewer.innerHTML = `
+    <h2 class="fade-in-element">${arabicMeta.englishName} <span class="muted">(${arabicMeta.name})</span></h2>
+    <p class="muted fade-in-element">Surah ${surahId} • ${arabicMeta.numberOfAyahs} verses${
+      revelationInfo(arabicMeta.revelationType).label
+        ? ` <span class="surah-type-badge surah-type-badge--${revelationInfo(arabicMeta.revelationType).cls}">${revelationInfo(arabicMeta.revelationType).label}</span>`
+        : ""
+    }</p>
     ${
       surahShowsStandaloneBismillah(surahId)
         ? `<div class="bismillah-header" id="bismillah-header" role="presentation">
@@ -777,9 +924,8 @@ function renderSurah(arabicMeta, ayat) {
       .map(
         (ayah) => `
           <article class="ayah ayah-clickable fade-in-element" id="ayah-${ayah.number}" data-ayah-number="${ayah.number}">
-            <p class="ayah-ar arabic">${ayah.ar}</p>
-            <p>${ayah.en}</p>
-            <p class="muted">Ayah ${ayah.number}</p>
+            <p class="ayah-ar arabic">${arabicWithMarker(ayah.ar, ayah.number)}</p>
+            <p class="ayah-en">${ayahNumberMarker(ayah.number)}<span class="ayah-en-text">${ayah.en}</span></p>
           </article>
         `
       )
@@ -813,9 +959,14 @@ function renderSurah(arabicMeta, ayat) {
     needsBismillahIntro: surahUsesBismillahAudioIntro(surahId),
     bismillahIntroDone: false,
     onBismillahIntro: false,
+    repeatMode: "off",
+    repeatAyah: ayat.length ? ayat[0].number : 1,
+    repeatFrom: ayat.length ? ayat[0].number : 1,
+    repeatTo: ayat.length ? ayat[ayat.length - 1].number : 1,
   };
 
-  setFollowStatus("Follow mode is ready.");
+  setFollowStatus("");
+  initFollowOptionsUI();
   updateFollowDockUI();
 
   applyReciterSelectionToUI(getSelectedReciterKey());
@@ -865,6 +1016,63 @@ async function loadSurah() {
   }
 }
 
+function setFollowRepeatMode(mode) {
+  if (!followState) return;
+  followState.repeatMode = mode;
+  if (mode === "ayah") {
+    const cur = followState.ayat[effectiveFollowIndex()];
+    if (cur) followState.repeatAyah = cur.number;
+    const ayahEl = document.getElementById("follow-ayah-num");
+    if (ayahEl) ayahEl.value = String(followState.repeatAyah);
+  }
+  updateRepeatModeUI();
+}
+
+function updateRepeatModeUI() {
+  const mode = followState ? followState.repeatMode : "off";
+  document.querySelectorAll(".follow-repeat-btn").forEach((btn) => {
+    const on = btn.dataset.repeat === mode;
+    btn.classList.toggle("is-on", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  const ayahInputs = document.getElementById("follow-ayah-inputs");
+  const rangeInputs = document.getElementById("follow-range-inputs");
+  if (ayahInputs) ayahInputs.hidden = mode !== "ayah";
+  if (rangeInputs) rangeInputs.hidden = mode !== "range";
+}
+
+function initFollowOptionsUI() {
+  if (!followState) return;
+  const total = followState.ayat.length;
+  const ayahEl = document.getElementById("follow-ayah-num");
+  const fromEl = document.getElementById("follow-range-from");
+  const toEl = document.getElementById("follow-range-to");
+  if (ayahEl) {
+    ayahEl.max = String(total);
+    ayahEl.value = String(followState.repeatAyah);
+  }
+  if (fromEl) {
+    fromEl.max = String(total);
+    fromEl.value = String(followState.repeatFrom);
+  }
+  if (toEl) {
+    toEl.max = String(total);
+    toEl.value = String(followState.repeatTo);
+  }
+  updateRepeatModeUI();
+}
+
+function clampAyahNumber(value) {
+  const total = followState ? followState.ayat.length : 1;
+  let n = parseInt(value, 10);
+  if (Number.isNaN(n)) n = 1;
+  return Math.max(1, Math.min(total, n));
+}
+
+function applyTranslationVisibility(show) {
+  document.body.classList.toggle("hide-translation", !show);
+}
+
 if (!followDockHandlersBound && followPlayPauseBtn) {
   followDockHandlersBound = true;
   followPlayPauseBtn.addEventListener("click", onFollowPlayPauseClick);
@@ -872,7 +1080,65 @@ if (!followDockHandlersBound && followPlayPauseBtn) {
   document.getElementById("follow-btn-rewind")?.addEventListener("click", onFollowRewindClick);
   document.getElementById("follow-btn-forward")?.addEventListener("click", onFollowForwardClick);
   document.getElementById("follow-btn-next")?.addEventListener("click", onFollowNextClick);
-  document.getElementById("follow-btn-stop")?.addEventListener("click", onStopFollowClick);
+
+  document.getElementById("follow-dock-handle")?.addEventListener("click", toggleDock);
+  document.getElementById("follow-mini-expand")?.addEventListener("click", expandDock);
+  document.getElementById("follow-mini-play")?.addEventListener("click", onFollowPlayPauseClick);
+
+  document.querySelectorAll(".follow-repeat-btn").forEach((btn) => {
+    btn.addEventListener("click", () => setFollowRepeatMode(btn.dataset.repeat));
+  });
+
+  const ayahEl = document.getElementById("follow-ayah-num");
+  if (ayahEl) {
+    ayahEl.addEventListener("change", () => {
+      if (!followState) return;
+      followState.repeatAyah = clampAyahNumber(ayahEl.value);
+      ayahEl.value = String(followState.repeatAyah);
+      if (followState.isPlaying && followState.repeatMode === "ayah") {
+        const idx = indexOfAyahNumber(followState.repeatAyah);
+        if (idx !== -1) seekFollowToIndex(idx);
+      }
+    });
+  }
+
+  const fromEl = document.getElementById("follow-range-from");
+  const toEl = document.getElementById("follow-range-to");
+  if (fromEl && toEl) {
+    fromEl.addEventListener("change", () => {
+      if (!followState) return;
+      followState.repeatFrom = clampAyahNumber(fromEl.value);
+      if (followState.repeatFrom > followState.repeatTo) {
+        followState.repeatTo = followState.repeatFrom;
+      }
+      fromEl.value = String(followState.repeatFrom);
+      toEl.value = String(followState.repeatTo);
+    });
+    toEl.addEventListener("change", () => {
+      if (!followState) return;
+      followState.repeatTo = clampAyahNumber(toEl.value);
+      if (followState.repeatTo < followState.repeatFrom) {
+        followState.repeatFrom = followState.repeatTo;
+      }
+      fromEl.value = String(followState.repeatFrom);
+      toEl.value = String(followState.repeatTo);
+    });
+  }
+
+  const translationCheckbox = document.getElementById("follow-translation-checkbox");
+  if (translationCheckbox) {
+    const saved = localStorage.getItem(STORAGE_SHOW_TRANSLATION);
+    const show = saved === null ? true : saved === "true";
+    translationCheckbox.checked = show;
+    applyTranslationVisibility(show);
+    translationCheckbox.addEventListener("change", () => {
+      applyTranslationVisibility(translationCheckbox.checked);
+      localStorage.setItem(
+        STORAGE_SHOW_TRANSLATION,
+        translationCheckbox.checked ? "true" : "false"
+      );
+    });
+  }
 }
 
 if (!surahViewerAyahClickBound && viewer) {
