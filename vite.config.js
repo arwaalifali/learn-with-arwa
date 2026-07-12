@@ -12,6 +12,7 @@ export default defineConfig({
         duas: "duas.html",
         prayerTimes: "prayer-times.html",
         islamicCalendar: "islamic-calendar.html",
+        feedback: "feedback.html",
       },
     },
   },

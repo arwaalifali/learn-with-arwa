@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="assets/favicon.png?v=2" />
+    <link rel="apple-touch-icon" href="assets/favicon.png?v=2" />
+    <title>Learn with Arwa | Feedback</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Lato:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <a class="logo" href="index.html" aria-label="Learn with Arwa home">
+          <img class="logo-image" src="assets/logo.png?v=6" alt="Learn with Arwa logo" />
+        </a>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="quran.html">Quran</a></li>
+          <li><a href="hadith.html">Hadith</a></li>
+          <li><a href="duas.html">Duas</a></li>
+          <li><a href="prayer-times.html">Prayers</a></li>
+          <li><a href="islamic-calendar.html">Calendar</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="feedback.html">Feedback</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-hero feedback-hero dark-section">
+        <div class="container">
+          <h1>Share Your Feedback</h1>
+          <p>Your thoughts help us make Learn with Arwa better for everyone.</p>
+        </div>
+      </section>
+
+      <section class="section feedback-section">
+        <div class="container feedback-container">
+          <div id="feedback-thank-you" class="feedback-thank-you" hidden>
+            <h2>JazakAllahu Khayran for your feedback!</h2>
+            <p>
+              May Allah reward you for helping us improve Learn with Arwa.
+            </p>
+          </div>
+
+          <form id="feedback-form" class="feedback-form fade-in-element" novalidate>
+            <div class="feedback-field">
+              <label for="feedback-name">Name <span class="feedback-optional">(optional)</span></label>
+              <input type="text" id="feedback-name" name="name" class="feedback-input" autocomplete="name" />
+            </div>
+
+            <div class="feedback-field">
+              <label for="feedback-found">How did you find the website?</label>
+              <select id="feedback-found" name="foundVia" class="feedback-input feedback-select" required>
+                <option value="">Please select</option>
+                <option value="Google">Google</option>
+                <option value="Social Media">Social Media</option>
+                <option value="Friend">Friend</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="feedback-field">
+              <span class="feedback-label" id="feedback-rating-label">How would you rate the website?</span>
+              <div class="star-rating" role="radiogroup" aria-labelledby="feedback-rating-label">
+                <button type="button" class="star-rating-star" data-value="1" aria-label="1 star">★</button>
+                <button type="button" class="star-rating-star" data-value="2" aria-label="2 stars">★</button>
+                <button type="button" class="star-rating-star" data-value="3" aria-label="3 stars">★</button>
+                <button type="button" class="star-rating-star" data-value="4" aria-label="4 stars">★</button>
+                <button type="button" class="star-rating-star" data-value="5" aria-label="5 stars">★</button>
+              </div>
+              <input type="hidden" id="feedback-rating" name="rating" value="" required />
+            </div>
+
+            <div class="feedback-field">
+              <label for="feedback-likes">What do you like most about the website?</label>
+              <textarea id="feedback-likes" name="likes" class="feedback-input feedback-textarea" rows="3" required></textarea>
+            </div>
+
+            <div class="feedback-field">
+              <label for="feedback-improve">What can we improve?</label>
+              <textarea id="feedback-improve" name="improve" class="feedback-input feedback-textarea" rows="3" required></textarea>
+            </div>
+
+            <div class="feedback-field">
+              <span class="feedback-label">Would you recommend this website to others?</span>
+              <div class="toggle-group" role="group" aria-label="Would you recommend this website to others?">
+                <button type="button" class="toggle-btn is-active" data-value="yes">Yes</button>
+                <button type="button" class="toggle-btn" data-value="no">No</button>
+              </div>
+              <input type="hidden" id="feedback-recommend" name="recommend" value="yes" />
+            </div>
+
+            <div class="feedback-field">
+              <label for="feedback-comments">Any other comments?</label>
+              <textarea id="feedback-comments" name="comments" class="feedback-input feedback-textarea" rows="3"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary feedback-submit">Submit Feedback</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer dark-section fade-in-element">
+      <div class="container footer-grid">
+        <div>
+          <a class="logo" href="index.html" aria-label="Learn with Arwa home">
+            <img class="logo-image" src="assets/logo.png?v=6" alt="Learn with Arwa logo" />
+          </a>
+        </div>
+        <div class="footer-links">
+          <h3>Quick Links</h3>
+          <a href="index.html">Home</a>
+          <a href="quran.html">Quran</a>
+          <a href="hadith.html">Hadith</a>
+          <a href="duas.html">Duas</a>
+          <a href="prayer-times.html">Prayer Times</a>
+          <a href="islamic-calendar.html">Islamic Calendar</a>
+          <a href="about.html">About</a>
+          <a href="feedback.html">Feedback</a>
+        </div>
+        <div class="footer-favourites">
+          <div class="footer-favourite">
+            <p class="footer-favourite-label">My Favourite Dua</p>
+            <p class="footer-favourite-ar arabic">اللَّهُمَّ أَنْتَ شَهِيدِي</p>
+            <p class="footer-favourite-text">O Allah You are my witness</p>
+          </div>
+          <hr class="footer-favourite-divider" />
+          <div class="footer-favourite">
+            <p class="footer-favourite-label">My Favourite Ayah</p>
+            <p class="footer-favourite-ar arabic">فَبِأَيِّ آلَاءِ رَبِّكُمَا تُكَذِّبَانِ</p>
+            <p class="footer-favourite-text">Then which of the favours of your Lord will you deny?</p>
+            <p class="footer-favourite-ref">Surah Ar-Rahman 55:13</p>
+          </div>
+          <hr class="footer-favourite-divider" />
+          <div class="footer-favourite">
+            <p class="footer-favourite-label">My Favourite Hadith</p>
+            <p class="footer-favourite-ar footer-favourite-hadith-ar arabic">الطُّهُورُ شَطْرُ الْإِيمَانِ</p>
+            <p class="footer-favourite-text">Cleanliness is half of faith</p>
+            <p class="footer-favourite-ref">Sahih Muslim</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span id="year"></span> Learn with Arwa. All rights reserved.
+      </div>
+    </footer>
+
+    <script type="module" src="scripts/common.js"></script>
+    <script type="module" src="scripts/feedback.js"></script>
+  </body>
+</html>
