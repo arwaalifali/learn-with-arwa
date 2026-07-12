@@ -64,9 +64,10 @@
       </section>
     </main>
 
-    <div class="follow-dock" role="region" aria-label="Follow mode recitation">
-      <button type="button" id="follow-dock-handle" class="follow-dock-handle" aria-label="Minimize player">
-        <span class="follow-dock-grip"></span>
+    <div class="follow-dock is-collapsed" role="region" aria-label="Follow mode recitation">
+      <button type="button" id="follow-dock-handle" class="dock-toggle" aria-label="Expand player">
+        <span class="dock-toggle-arrow dock-toggle-arrow--up" aria-hidden="true">▲</span>
+        <span class="dock-toggle-arrow dock-toggle-arrow--down" aria-hidden="true">▼</span>
       </button>
       <div class="follow-dock-mini" id="follow-dock-mini">
         <button type="button" id="follow-mini-play" class="follow-dock-mini-play" aria-label="Play">
@@ -76,9 +77,6 @@
           <span class="follow-dock-mini-surah" id="follow-mini-surah">—</span>
           <span class="follow-dock-mini-ayah" id="follow-mini-ayah">Ayah — of —</span>
         </div>
-        <button type="button" id="follow-mini-expand" class="follow-dock-mini-expand" aria-label="Expand player">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
-        </button>
       </div>
       <div class="container follow-dock-inner">
         <div class="follow-dock-info">

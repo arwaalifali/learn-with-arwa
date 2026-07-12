@@ -132,7 +132,7 @@
     font-weight: 800;
     padding: 0.3rem 0.4rem;
     border-radius: 999px;
-    font-size: 0.78rem;
+    font-size: 0.95rem;
     white-space: nowrap;
   }
   
@@ -943,25 +943,29 @@
   }
 
   .follow-dock-handle,
+  .dock-toggle,
   .follow-dock-mini {
     display: none;
   }
 
-  .follow-dock-handle {
+  .dock-toggle {
     width: 100%;
     background: none;
     border: none;
-    padding: 6px 0 2px;
+    padding: 0;
     cursor: pointer;
     justify-content: center;
+    align-items: center;
+    color: #8a6f5c;
+    line-height: 1;
   }
 
-  .follow-dock-grip {
-    display: block;
-    width: 42px;
-    height: 5px;
-    border-radius: 999px;
-    background: #d8c7ac;
+  .dock-toggle-arrow {
+    font-size: 0.6rem;
+  }
+
+  .dock-toggle-arrow--down {
+    display: none;
   }
 
   .follow-dock-mini {
@@ -1754,6 +1758,79 @@
       grid-template-columns: 1fr;
     }
 
+    .follow-dock {
+      padding: 0;
+      font-weight: 600;
+    }
+
+    .follow-dock.is-collapsed {
+      height: 44px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .surah-page {
+      padding-bottom: 50px;
+    }
+
+    .dock-toggle {
+      display: flex;
+      flex: 0 0 12px;
+      min-height: 12px;
+      padding-top: 2px;
+    }
+
+    .follow-dock.is-collapsed .dock-toggle-arrow--up {
+      display: inline;
+    }
+
+    .follow-dock.is-collapsed .dock-toggle-arrow--down {
+      display: none;
+    }
+
+    .follow-dock:not(.is-collapsed) .dock-toggle-arrow--up {
+      display: none;
+    }
+
+    .follow-dock:not(.is-collapsed) .dock-toggle-arrow--down {
+      display: inline;
+    }
+
+    .follow-dock:not(.is-collapsed) {
+      height: auto;
+      padding: 0.4rem 0;
+    }
+
+    .follow-dock-mini {
+      display: none;
+      flex: 1 1 auto;
+      min-height: 0;
+      align-items: center;
+      gap: 0.55rem;
+      width: min(1120px, 92%);
+      margin-inline: auto;
+      padding: 0 0.65rem 2px;
+    }
+
+    .follow-dock-mini-play {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .follow-dock-mini-play svg {
+      width: 1.1rem;
+      height: 1.1rem;
+    }
+
+    .follow-dock-mini-surah {
+      font-size: 0.82rem;
+    }
+
+    .follow-dock-mini-ayah {
+      font-size: 0.72rem;
+    }
+
     .follow-dock-inner {
       flex-direction: column;
       justify-content: center;
@@ -1791,11 +1868,6 @@
       text-align: center;
     }
 
-    .follow-dock-handle {
-      display: flex;
-    }
-
-    .follow-dock.is-collapsed .follow-dock-handle,
     .follow-dock.is-collapsed .follow-dock-inner,
     .follow-dock.is-collapsed .follow-dock-options,
     .follow-dock.is-collapsed .follow-dock-status {
