@@ -59,6 +59,112 @@ function showThankYou() {
     thankYou.hidden = false;
     observeFadeInElements(thankYou);
   }
+  renderFeedbackList();
+}
+
+function formatFeedbackDate(isoString) {
+  try {
+    return new Date(isoString).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
+
+function createStarsElement(rating) {
+  const wrap = document.createElement("div");
+  wrap.className = "feedback-card-stars";
+  wrap.setAttribute("aria-label", `${rating} out of 5 stars`);
+  for (let i = 1; i <= 5; i += 1) {
+    const star = document.createElement("span");
+    star.className = "feedback-card-star";
+    star.textContent = i <= rating ? "★" : "☆";
+    star.setAttribute("aria-hidden", "true");
+    wrap.appendChild(star);
+  }
+  return wrap;
+}
+
+function createFeedbackBlock(label, text, extraClass = "") {
+  const block = document.createElement("div");
+  block.className = `feedback-card-block${extraClass ? ` ${extraClass}` : ""}`;
+
+  const heading = document.createElement("p");
+  heading.className = "feedback-card-block-label";
+  heading.textContent = label;
+
+  const body = document.createElement("p");
+  body.className = "feedback-card-block-text";
+  body.textContent = text;
+
+  block.append(heading, body);
+  return block;
+}
+
+function createFeedbackCard(entry) {
+  const card = document.createElement("article");
+  card.className = "feedback-card fade-in-element";
+
+  const header = document.createElement("div");
+  header.className = "feedback-card-header";
+
+  const nameEl = document.createElement("h3");
+  nameEl.className = "feedback-card-name";
+  nameEl.textContent = entry.name || "Anonymous";
+
+  const meta = document.createElement("div");
+  meta.className = "feedback-card-meta";
+
+  const dateEl = document.createElement("time");
+  dateEl.className = "feedback-card-date";
+  dateEl.dateTime = entry.submittedAt || "";
+  dateEl.textContent = formatFeedbackDate(entry.submittedAt);
+
+  const foundEl = document.createElement("span");
+  foundEl.className = "feedback-card-found";
+  foundEl.textContent = entry.foundVia ? `Found via ${entry.foundVia}` : "";
+
+  const recommendEl = document.createElement("span");
+  recommendEl.className = `feedback-card-recommend feedback-card-recommend--${entry.recommend === "no" ? "no" : "yes"}`;
+  recommendEl.textContent = entry.recommend === "no" ? "Would not recommend" : "Would recommend";
+
+  meta.append(dateEl);
+  if (entry.foundVia) meta.append(foundEl);
+  meta.append(recommendEl);
+
+  header.append(nameEl, createStarsElement(entry.rating || 0), meta);
+
+  card.appendChild(header);
+  card.appendChild(createFeedbackBlock("What they liked", entry.likes));
+  card.appendChild(createFeedbackBlock("Suggested improvement", entry.improve, "feedback-card-block--improve"));
+
+  if (entry.comments) {
+    card.appendChild(createFeedbackBlock("Other comments", entry.comments));
+  }
+
+  return card;
+}
+
+function renderFeedbackList() {
+  const listEl = document.getElementById("feedback-list");
+  const emptyEl = document.getElementById("feedback-list-empty");
+  if (!listEl) return;
+
+  const entries = getStoredFeedback().slice().reverse();
+  listEl.replaceChildren();
+
+  if (emptyEl) emptyEl.hidden = entries.length > 0;
+
+  entries.forEach((entry) => {
+    listEl.appendChild(createFeedbackCard(entry));
+  });
+
+  if (entries.length > 0) {
+    observeFadeInElements(listEl);
+  }
 }
 
 function resetForm() {
@@ -111,6 +217,7 @@ function initFeedbackPage() {
   initRecommendToggle();
   form.addEventListener("submit", handleSubmit);
   observeFadeInElements(form);
+  renderFeedbackList();
 }
 
 initFeedbackPage();

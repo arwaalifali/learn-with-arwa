@@ -1,82 +1,55 @@
 import { observeFadeInElements } from "./common.js";
 
-const duaContent = [
-  {
-    title: "Morning Duas",
-    items: [
-      {
-        ar: "اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا وَبِكَ نَحْيَا وَبِكَ نَمُوتُ وَإِلَيْكَ النُّشُورُ",
-        translit:
-          "Allahumma bika asbahna wa bika amsayna wa bika nahya wa bika namutu wa ilaykan-nushur.",
-        en: "O Allah, by You we enter the morning and by You we enter the evening. By You we live and by You we die, and to You is the resurrection.",
-      },
-      {
-        ar: "رَضِيتُ بِاللَّهِ رَبًّا وَبِالْإِسْلَامِ دِينًا وَبِمُحَمَّدٍ ﷺ نَبِيًّا",
-        translit:
-          "Raditu billahi Rabban wa bil-Islami dinan wa bi Muhammadin ﷺ nabiyya.",
-        en: "I am pleased with Allah as my Lord, Islam as my religion, and Muhammad ﷺ as my Prophet.",
-      },
-    ],
-  },
-  {
-    title: "Evening Duas",
-    items: [
-      {
-        ar: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ وَالْحَمْدُ لِلَّهِ",
-        translit: "Amsayna wa amsal-mulku lillah, wal-hamdu lillah.",
-        en: "We have reached the evening and all dominion belongs to Allah, and all praise is for Allah.",
-      },
-      {
-        ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ",
-        translit: "Allahumma inni as'alukal-'afwa wal-'afiyah.",
-        en: "O Allah, I ask You for forgiveness and well-being.",
-      },
-    ],
-  },
-  {
-    title: "Daily Supplications",
-    items: [
-      {
-        ar: "رَبِّ زِدْنِي عِلْمًا",
-        translit: "Rabbi zidni 'ilma.",
-        en: "My Lord, increase me in knowledge.",
-      },
-      {
-        ar: "اللَّهُمَّ اغْفِرْ لِي وَلِوَالِدَيَّ",
-        translit: "Allahummaghfir li wa liwalidayya.",
-        en: "O Allah, forgive me and my parents.",
-      },
-    ],
-  },
-];
+const searchInput = document.getElementById("dua-search");
+const searchEmpty = document.getElementById("dua-search-empty");
+const duaGroups = document.querySelectorAll(".dua-group");
 
-const duaSections = document.getElementById("dua-sections");
+function filterDuas(query) {
+  const normalizedQuery = query.trim().toLowerCase();
+  const arabicQuery = query.trim();
+  let visibleCount = 0;
 
-duaContent.forEach((group) => {
-  const wrapper = document.createElement("section");
-  wrapper.className = "dua-group";
+  duaGroups.forEach((group) => {
+    const heading = group.querySelector(".dua-group-heading")?.textContent ?? "";
+    let groupVisible = 0;
 
-  const heading = document.createElement("h2");
-  heading.className = "fade-in-element";
-  heading.textContent = group.title;
-  wrapper.appendChild(heading);
+    group.querySelectorAll(".dua-card").forEach((card) => {
+      const arabic = card.querySelector(".dua-ar")?.textContent ?? "";
+      const english = card.querySelector(".dua-en")?.textContent ?? "";
+      const source = card.querySelector(".dua-source")?.textContent ?? "";
 
-  const cardList = document.createElement("div");
-  cardList.className = "fade-in-stagger";
+      const matches =
+        !normalizedQuery ||
+        heading.toLowerCase().includes(normalizedQuery) ||
+        english.toLowerCase().includes(normalizedQuery) ||
+        source.toLowerCase().includes(normalizedQuery) ||
+        arabic.includes(arabicQuery);
 
-  group.items.forEach((dua) => {
-    const card = document.createElement("article");
-    card.className = "entry-card fade-in-element";
-    card.innerHTML = `
-      <p class="arabic">${dua.ar}</p>
-      <p><strong>Transliteration:</strong> ${dua.translit}</p>
-      <p>${dua.en}</p>
-    `;
-    cardList.appendChild(card);
+      card.classList.toggle("is-hidden", !matches);
+      if (matches) groupVisible += 1;
+    });
+
+    group.classList.toggle("is-hidden", normalizedQuery.length > 0 && groupVisible === 0);
+    visibleCount += groupVisible;
   });
 
-  wrapper.appendChild(cardList);
-  duaSections.appendChild(wrapper);
-});
+  if (searchEmpty) {
+    searchEmpty.hidden = !(normalizedQuery.length > 0 && visibleCount === 0);
+  }
+}
 
-observeFadeInElements(duaSections);
+if (searchInput) {
+  searchInput.addEventListener("input", (event) => {
+    filterDuas(event.target.value);
+  });
+
+  searchInput.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      searchInput.value = "";
+      filterDuas("");
+      searchInput.blur();
+    }
+  });
+}
+
+observeFadeInElements(document.querySelector(".duas-container"));

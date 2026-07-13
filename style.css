@@ -1046,10 +1046,55 @@
     min-width: 0;
   }
 
+  .follow-dock-surah-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    width: 100%;
+  }
+
+  .follow-dock-surah-btn {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid rgba(169, 139, 118, 0.35);
+    border-radius: 50%;
+    background: var(--cream);
+    color: #8a6f5c;
+    cursor: pointer;
+    transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+  }
+
+  .follow-dock-surah-btn svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    display: block;
+  }
+
+  .follow-dock-surah-btn:hover:not(:disabled),
+  .follow-dock-surah-btn:focus-visible:not(:disabled) {
+    background: rgba(169, 139, 118, 0.14);
+    color: #5e4632;
+    border-color: var(--mocha);
+    outline: none;
+  }
+
+  .follow-dock-surah-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
   .follow-dock-info-text {
+    flex: 1 1 auto;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 0.05rem;
+    text-align: center;
   }
 
   .follow-dock-surah {
@@ -1357,24 +1402,33 @@
   }
   
   .surah-type-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin-inline-start: 0.5rem;
-    padding: 0.12rem 0.62rem;
+    padding: 0.28rem 0.5rem;
     border-radius: 999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
     vertical-align: middle;
+    line-height: 0;
+    border: 1px solid transparent;
+  }
+
+  .surah-type-icon {
+    width: 1.35rem;
+    height: 1.35rem;
+    display: block;
   }
 
   .surah-type-badge--makki {
-    background: rgba(107, 143, 94, 0.18);
-    color: #3f5a34;
+    background: var(--cream);
+    border-color: rgba(212, 175, 55, 0.55);
+    box-shadow: 0 1px 3px rgba(26, 21, 18, 0.08);
   }
 
   .surah-type-badge--madani {
-    background: rgba(169, 139, 118, 0.22);
-    color: var(--text-brown);
+    background: var(--cream);
+    border-color: rgba(47, 107, 71, 0.35);
+    box-shadow: 0 1px 3px rgba(47, 107, 71, 0.08);
   }
 
   .recitation-box {
@@ -1613,6 +1667,11 @@
     min-height: 100%;
   }
 
+  .dua-card.is-hidden,
+  .dua-group.is-hidden {
+    display: none;
+  }
+
   .dua-ar {
     font-family: "Amiri", serif;
     font-size: clamp(1.2rem, 3vw, 1.45rem);
@@ -1841,7 +1900,10 @@
     .follow-dock-info {
       flex: 0 0 auto;
       width: 100%;
-      text-align: center;
+    }
+
+    .follow-dock-surah-nav {
+      justify-content: center;
     }
 
     .follow-dock-info-text {
@@ -2602,6 +2664,130 @@
   .feedback-submit:hover {
     background: #5a7a4f;
     border-color: #5a7a4f;
+  }
+
+  .feedback-list-section {
+    background: #fff;
+    padding-top: 0;
+  }
+
+  .feedback-list-header {
+    text-align: center;
+    margin-bottom: 1.75rem;
+  }
+
+  .feedback-list-header h2 {
+    font-family: "Playfair Display", serif;
+    color: var(--mocha);
+    margin-bottom: 0.5rem;
+  }
+
+  .feedback-list-header p {
+    color: var(--text-brown);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .feedback-list-empty {
+    background: var(--cream);
+    border: 1px dashed var(--sand);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .feedback-list-empty[hidden] {
+    display: none;
+  }
+
+  .feedback-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .feedback-card {
+    background: #fff;
+    border: 1px solid var(--sand);
+    border-radius: var(--radius);
+    padding: clamp(1rem, 3vw, 1.35rem);
+    box-shadow: var(--shadow);
+  }
+
+  .feedback-card-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid rgba(169, 139, 118, 0.2);
+  }
+
+  .feedback-card-name {
+    font-family: "Playfair Display", serif;
+    font-size: 1.1rem;
+    color: var(--text-brown);
+    margin: 0 0 0.35rem;
+  }
+
+  .feedback-card-stars {
+    display: flex;
+    gap: 0.15rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .feedback-card-star {
+    color: #a98b76;
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+
+  .feedback-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 0.75rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .feedback-card-recommend {
+    font-weight: 700;
+  }
+
+  .feedback-card-recommend--yes {
+    color: #6b8f5e;
+  }
+
+  .feedback-card-recommend--no {
+    color: #a65d5d;
+  }
+
+  .feedback-card-block + .feedback-card-block {
+    margin-top: 0.85rem;
+  }
+
+  .feedback-card-block-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--mocha);
+    margin: 0 0 0.3rem;
+  }
+
+  .feedback-card-block-text {
+    margin: 0;
+    color: var(--ink);
+    line-height: 1.55;
+  }
+
+  .feedback-card-block--improve {
+    background: rgba(169, 139, 118, 0.08);
+    border-left: 3px solid var(--mocha);
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .feedback-card-block--improve .feedback-card-block-label {
+    color: var(--text-brown);
   }
 
   /* ── Feedback popup ── */

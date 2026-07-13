@@ -43,6 +43,35 @@
 
       <section class="section duas-section">
         <div class="container duas-container">
+          <div class="quran-search-wrap">
+            <label class="visually-hidden" for="dua-search">Search Duas</label>
+            <div class="quran-search">
+              <svg
+                class="quran-search-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="M20 20 16.5 16.5" />
+              </svg>
+              <input
+                type="search"
+                id="dua-search"
+                class="quran-search-input"
+                placeholder="Search by Arabic, English, or category…"
+                autocomplete="off"
+                enterkeyhint="search"
+              />
+            </div>
+          </div>
+          <p id="dua-search-empty" class="quran-search-empty" hidden>No results found</p>
+
           <section class="dua-group">
             <h2 class="dua-group-heading fade-in-element">Morning Duas</h2>
             <div class="dua-grid fade-in-stagger">
@@ -388,5 +417,6 @@
     </footer>
 
     <script type="module" src="scripts/common.js"></script>
+    <script type="module" src="scripts/duas.js"></script>
   </body>
 </html>

@@ -80,9 +80,17 @@
       </div>
       <div class="container follow-dock-inner">
         <div class="follow-dock-info">
-          <div class="follow-dock-info-text">
-            <span class="follow-dock-surah" id="follow-dock-surah">—</span>
-            <span class="follow-dock-ayah-line" id="follow-dock-ayah">Ayah — of —</span>
+          <div class="follow-dock-surah-nav" role="group" aria-label="Surah navigation">
+            <button type="button" id="follow-btn-surah-prev" class="follow-dock-surah-btn" title="Previous surah" aria-label="Previous surah">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>
+            </button>
+            <div class="follow-dock-info-text">
+              <span class="follow-dock-surah" id="follow-dock-surah">—</span>
+              <span class="follow-dock-ayah-line" id="follow-dock-ayah">Ayah — of —</span>
+            </div>
+            <button type="button" id="follow-btn-surah-next" class="follow-dock-surah-btn" title="Next surah" aria-label="Next surah">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M10 6l6 6-6 6"/></svg>
+            </button>
           </div>
         </div>
         <div class="follow-dock-transport" role="group" aria-label="Playback controls">

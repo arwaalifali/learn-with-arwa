@@ -95,11 +95,35 @@ function arabicWithMarker(ar, n) {
 /** Exact Bismillah form to strip when it matches Ayah 1 text (plus Uthmani API variant via regex below). */
 const BISMILLAH_AYAH_PREFIX_PLAIN = "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ";
 
-/** Map the API revelation type to a Makki/Madani label + style class. */
+const KAABA_ICON = `<svg class="surah-type-icon surah-type-icon--kaaba" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5.5" y="5.5" width="13" height="13" rx="0.4" fill="#14110f" stroke="#2a231c" stroke-width="0.65"/><rect x="5.5" y="11.2" width="13" height="2.4" fill="#d4af37"/><rect x="9.8" y="13" width="4.4" height="4.2" rx="0.25" fill="#1a1512" stroke="#d4af37" stroke-width="0.65"/><rect x="11.1" y="14.3" width="1.8" height="2.2" fill="#d4af37"/></svg>`;
+
+const MASJID_NABAWI_ICON = `<svg class="surah-type-icon surah-type-icon--madani" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="18.2" width="20" height="2.8" rx="0.5" fill="#e8dcc8"/><rect x="3.5" y="14.5" width="17" height="3.7" rx="0.4" fill="#f7f1e8"/><path d="M5.5 14.5h13" stroke="#cdb89f" stroke-width="0.6"/><path d="M7 14.5v2.2M10 14.5v2.2M14 14.5v2.2M17 14.5v2.2" stroke="#cdb89f" stroke-width="0.55"/><rect x="4.2" y="5.5" width="2.2" height="13" rx="0.45" fill="#efe4d4"/><rect x="4" y="4.2" width="2.6" height="1.8" rx="0.35" fill="#d4af37"/><rect x="17.6" y="5.5" width="2.2" height="13" rx="0.45" fill="#efe4d4"/><rect x="17.4" y="4.2" width="2.6" height="1.8" rx="0.35" fill="#d4af37"/><path d="M12 3.2c-5.2 0-9 3.4-9 7.5 0 1.5.5 2.9 1.4 4h15.2c.9-1.1 1.4-2.5 1.4-4 0-4.1-3.8-7.5-9-7.5Z" fill="#2f6b47"/><path d="M12 3.2c-3.4 0-6.2 1.8-7.4 4.4 2.4-1.2 5-1.9 7.4-1.9s5 .7 7.4 1.9C18.2 5 15.4 3.2 12 3.2Z" fill="#3f8a5c"/><path d="M12 6.8c-2.6 0-4.8 1.2-5.8 3 1.6-.8 3.6-1.2 5.8-1.2s4.2.4 5.8 1.2C16.8 8 14.6 6.8 12 6.8Z" fill="#52a06f"/><circle cx="12" cy="4.8" r="0.75" fill="#d4af37"/></svg>`;
+
+/** Map the API revelation type to a Makki/Madani label + style class + icon. */
 function revelationInfo(type) {
-  if (type === "Meccan") return { label: "Makki", cls: "makki" };
-  if (type === "Medinan") return { label: "Madani", cls: "madani" };
-  return { label: type || "", cls: "" };
+  if (type === "Meccan") {
+    return {
+      label: "Makki",
+      cls: "makki",
+      title: "Makki — revealed in Makkah",
+      icon: KAABA_ICON,
+    };
+  }
+  if (type === "Medinan") {
+    return {
+      label: "Madani",
+      cls: "madani",
+      title: "Madani — revealed in Madinah",
+      icon: MASJID_NABAWI_ICON,
+    };
+  }
+  return { label: type || "", cls: "", title: "", icon: "" };
+}
+
+function revelationBadgeHtml(revelationType) {
+  const info = revelationInfo(revelationType);
+  if (!info.cls) return "";
+  return `<span class="surah-type-badge surah-type-badge--${info.cls}" title="${info.title}" aria-label="${info.label} surah">${info.icon}</span>`;
 }
 
 function surahShowsStandaloneBismillah(surahId) {
@@ -256,6 +280,15 @@ function updatePlayPauseButton() {
 function updateFollowDockUI() {
   updateFollowDockInfo();
   updatePlayPauseButton();
+  updateSurahNavButtons();
+}
+
+function updateSurahNavButtons() {
+  const surahId = followState?.surahId ?? getSurahId();
+  const prevBtn = document.getElementById("follow-btn-surah-prev");
+  const nextBtn = document.getElementById("follow-btn-surah-next");
+  if (prevBtn) prevBtn.disabled = surahId <= 1;
+  if (nextBtn) nextBtn.disabled = surahId >= LAST_SURAH_ID;
 }
 
 let autoCollapseTimer = null;
@@ -502,20 +535,33 @@ function persistReciterForNextSurah(reciterKey) {
   localStorage.setItem(STORAGE_SELECTED_RECITER, key);
 }
 
-function advanceToNextSurah() {
-  if (!followState) return;
-  const nextId = followState.surahId + 1;
-  if (nextId > LAST_SURAH_ID) return;
+function navigateToSurah(targetId, { autoplay = false } = {}) {
+  if (targetId < 1 || targetId > LAST_SURAH_ID) return;
 
-  if (followState.currentAudio) {
+  if (followState?.currentAudio) {
     followState.currentAudio.pause();
     followState.currentAudio = null;
   }
-  followState.isPlaying = false;
+  if (followState) followState.isPlaying = false;
 
-  persistReciterForNextSurah(followState.reciterKey);
-  localStorage.setItem(STORAGE_AUTOPLAY, "true");
-  window.location.assign(`surah.html?id=${nextId}`);
+  persistReciterForNextSurah(getSelectedReciterKey());
+  if (autoplay) localStorage.setItem(STORAGE_AUTOPLAY, "true");
+  window.location.assign(`surah.html?id=${targetId}`);
+}
+
+function advanceToNextSurah() {
+  if (!followState) return;
+  navigateToSurah(followState.surahId + 1, { autoplay: true });
+}
+
+function onFollowSurahPrevClick() {
+  const surahId = followState?.surahId ?? getSurahId();
+  navigateToSurah(surahId - 1);
+}
+
+function onFollowSurahNextClick() {
+  const surahId = followState?.surahId ?? getSurahId();
+  navigateToSurah(surahId + 1);
 }
 
 function handleSurahFollowComplete() {
@@ -906,11 +952,7 @@ function renderSurah(arabicMeta, ayat) {
 
   viewer.innerHTML = `
     <h2 class="fade-in-element">${arabicMeta.englishName} <span class="muted">(${arabicMeta.name})</span></h2>
-    <p class="muted fade-in-element">Surah ${surahId} • ${arabicMeta.numberOfAyahs} verses${
-      revelationInfo(arabicMeta.revelationType).label
-        ? ` <span class="surah-type-badge surah-type-badge--${revelationInfo(arabicMeta.revelationType).cls}">${revelationInfo(arabicMeta.revelationType).label}</span>`
-        : ""
-    }</p>
+    <p class="muted fade-in-element">Surah ${surahId} • ${arabicMeta.numberOfAyahs} verses${revelationBadgeHtml(arabicMeta.revelationType)}</p>
     ${
       surahShowsStandaloneBismillah(surahId)
         ? `<div class="bismillah-header" id="bismillah-header" role="presentation">
@@ -1080,6 +1122,8 @@ if (!followDockHandlersBound && followPlayPauseBtn) {
   document.getElementById("follow-btn-rewind")?.addEventListener("click", onFollowRewindClick);
   document.getElementById("follow-btn-forward")?.addEventListener("click", onFollowForwardClick);
   document.getElementById("follow-btn-next")?.addEventListener("click", onFollowNextClick);
+  document.getElementById("follow-btn-surah-prev")?.addEventListener("click", onFollowSurahPrevClick);
+  document.getElementById("follow-btn-surah-next")?.addEventListener("click", onFollowSurahNextClick);
 
   document.getElementById("follow-dock-handle")?.addEventListener("click", toggleDock);
   document.getElementById("follow-mini-expand")?.addEventListener("click", expandDock);
@@ -1139,6 +1183,8 @@ if (!followDockHandlersBound && followPlayPauseBtn) {
       );
     });
   }
+
+  updateSurahNavButtons();
 }
 
 if (!surahViewerAyahClickBound && viewer) {
