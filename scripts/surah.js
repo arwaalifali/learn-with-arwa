@@ -126,6 +126,11 @@ function revelationBadgeHtml(revelationType) {
   return `<span class="surah-type-badge surah-type-badge--${info.cls}" title="${info.title}" aria-label="${info.label} surah">${info.icon}</span>`;
 }
 
+function surahMetaLineClass(revelationType) {
+  const cls = revelationInfo(revelationType).cls;
+  return cls ? `surah-meta-line surah-meta-line--${cls}` : "surah-meta-line";
+}
+
 function surahShowsStandaloneBismillah(surahId) {
   return surahId !== 1 && surahId !== 9;
 }
@@ -952,7 +957,7 @@ function renderSurah(arabicMeta, ayat) {
 
   viewer.innerHTML = `
     <h2 class="fade-in-element">${arabicMeta.englishName} <span class="muted">(${arabicMeta.name})</span></h2>
-    <p class="muted fade-in-element">Surah ${surahId} • ${arabicMeta.numberOfAyahs} verses${revelationBadgeHtml(arabicMeta.revelationType)}</p>
+    <p class="${surahMetaLineClass(arabicMeta.revelationType)} muted fade-in-element">Surah ${surahId} • ${arabicMeta.numberOfAyahs} verses${revelationBadgeHtml(arabicMeta.revelationType)}</p>
     ${
       surahShowsStandaloneBismillah(surahId)
         ? `<div class="bismillah-header" id="bismillah-header" role="presentation">

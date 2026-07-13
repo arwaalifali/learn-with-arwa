@@ -1,4 +1,9 @@
 import { observeFadeInElements } from "./common.js";
+import {
+  fetchPublicFeedback,
+  isFeedbackCloudEnabled,
+  savePublicFeedback,
+} from "./feedback-api.js";
 
 const FEEDBACK_STORAGE_KEY = "learnWithArwaFeedback";
 
@@ -6,8 +11,14 @@ const form = document.getElementById("feedback-form");
 const thankYou = document.getElementById("feedback-thank-you");
 const ratingInput = document.getElementById("feedback-rating");
 const recommendInput = document.getElementById("feedback-recommend");
+const submitButton = form?.querySelector(".feedback-submit");
 const starButtons = document.querySelectorAll(".star-rating-star");
 const toggleButtons = document.querySelectorAll(".toggle-btn");
+const listLoadingEl = document.getElementById("feedback-list-loading");
+const listErrorEl = document.getElementById("feedback-list-error");
+const statsEl = document.getElementById("feedback-stats");
+const averageEl = document.getElementById("feedback-average");
+const countEl = document.getElementById("feedback-count");
 
 function setStarRating(value) {
   if (!ratingInput) return;
@@ -38,7 +49,7 @@ function initRecommendToggle() {
   });
 }
 
-function getStoredFeedback() {
+function getLocalFeedback() {
   try {
     const raw = localStorage.getItem(FEEDBACK_STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -47,8 +58,8 @@ function getStoredFeedback() {
   }
 }
 
-function saveFeedback(entry) {
-  const existing = getStoredFeedback();
+function saveLocalFeedback(entry) {
+  const existing = getLocalFeedback();
   existing.push(entry);
   localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(existing));
 }
@@ -59,7 +70,6 @@ function showThankYou() {
     thankYou.hidden = false;
     observeFadeInElements(thankYou);
   }
-  renderFeedbackList();
 }
 
 function formatFeedbackDate(isoString) {
@@ -148,13 +158,29 @@ function createFeedbackCard(entry) {
   return card;
 }
 
-function renderFeedbackList() {
+function updateFeedbackStats(entries) {
+  if (!statsEl || !averageEl || !countEl) return;
+
+  if (!entries.length) {
+    statsEl.hidden = true;
+    return;
+  }
+
+  const totalRating = entries.reduce((sum, entry) => sum + Number(entry.rating || 0), 0);
+  const average = totalRating / entries.length;
+
+  averageEl.textContent = average.toFixed(1);
+  countEl.textContent = String(entries.length);
+  statsEl.hidden = false;
+}
+
+function renderFeedbackList(entries) {
   const listEl = document.getElementById("feedback-list");
   const emptyEl = document.getElementById("feedback-list-empty");
   if (!listEl) return;
 
-  const entries = getStoredFeedback().slice().reverse();
   listEl.replaceChildren();
+  updateFeedbackStats(entries);
 
   if (emptyEl) emptyEl.hidden = entries.length > 0;
 
@@ -164,6 +190,36 @@ function renderFeedbackList() {
 
   if (entries.length > 0) {
     observeFadeInElements(listEl);
+  }
+}
+
+function setListLoading(isLoading) {
+  if (listLoadingEl) listLoadingEl.hidden = !isLoading;
+}
+
+function setListError(message = "") {
+  if (!listErrorEl) return;
+  listErrorEl.textContent = message;
+  listErrorEl.hidden = !message;
+}
+
+async function loadFeedbackList() {
+  setListError("");
+  setListLoading(true);
+
+  try {
+    if (isFeedbackCloudEnabled()) {
+      const entries = await fetchPublicFeedback();
+      renderFeedbackList(entries ?? []);
+      return;
+    }
+
+    renderFeedbackList(getLocalFeedback().slice().reverse());
+  } catch {
+    setListError("Could not load community feedback right now. Please try again later.");
+    renderFeedbackList([]);
+  } finally {
+    setListLoading(false);
   }
 }
 
@@ -182,7 +238,7 @@ function resetForm() {
   });
 }
 
-function handleSubmit(event) {
+async function handleSubmit(event) {
   event.preventDefault();
   if (!form) return;
 
@@ -206,9 +262,35 @@ function handleSubmit(event) {
     comments: String(formData.get("comments") || "").trim(),
   };
 
-  saveFeedback(entry);
-  resetForm();
-  showThankYou();
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "Submitting...";
+  }
+
+  try {
+    if (isFeedbackCloudEnabled()) {
+      const saved = await savePublicFeedback(entry);
+      if (!saved) {
+        throw new Error("Save failed");
+      }
+    } else {
+      saveLocalFeedback(entry);
+    }
+
+    resetForm();
+    showThankYou();
+    await loadFeedbackList();
+  } catch {
+    if (ratingInput) {
+      ratingInput.setCustomValidity("Could not save your feedback. Please try again.");
+      ratingInput.reportValidity();
+    }
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Submit Feedback";
+    }
+  }
 }
 
 function initFeedbackPage() {
@@ -217,7 +299,7 @@ function initFeedbackPage() {
   initRecommendToggle();
   form.addEventListener("submit", handleSubmit);
   observeFadeInElements(form);
-  renderFeedbackList();
+  loadFeedbackList();
 }
 
 initFeedbackPage();

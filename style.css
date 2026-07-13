@@ -92,7 +92,7 @@
   .site-header {
     position: sticky;
     top: 0;
-    z-index: 20;
+    z-index: 110;
     background: #fff;
     border-bottom: 1px solid rgba(243, 228, 201, 0.4);
   }
@@ -746,7 +746,7 @@
   /* ── Reciter Picker Box ── */
   .reciter-picker-box {
     position: relative;
-    z-index: 100;
+    z-index: 10;
     background: rgba(255, 255, 255, 0.75);
     border: 1px solid var(--sand);
     border-radius: var(--radius);
@@ -756,7 +756,6 @@
 
   .reciter-picker-box select {
     position: relative;
-    z-index: 100;
     direction: ltr;
   }
   
@@ -1401,6 +1400,40 @@
     padding: 1.25rem;
   }
   
+  .surah-meta-line {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 0 1rem;
+    padding: 0.38rem 0.8rem;
+    border-radius: 999px;
+    background: var(--cream);
+    border: 1px solid rgba(169, 139, 118, 0.35);
+    box-shadow: 0 1px 3px rgba(26, 21, 18, 0.08);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .surah-meta-line--makki {
+    border-color: rgba(212, 175, 55, 0.55);
+  }
+
+  .surah-meta-line--madani {
+    border-color: rgba(47, 107, 71, 0.35);
+    box-shadow: 0 1px 3px rgba(47, 107, 71, 0.08);
+  }
+
+  .surah-meta-line .surah-type-badge {
+    margin-inline-start: 0.1rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
   .surah-type-badge {
     display: inline-flex;
     align-items: center;
@@ -2686,6 +2719,50 @@
     color: var(--text-brown);
     line-height: 1.6;
     margin: 0;
+  }
+
+  .feedback-stats {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.85rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(107, 143, 94, 0.12);
+    color: var(--text-brown);
+    font-size: 0.92rem;
+  }
+
+  .feedback-stats-stars {
+    color: #a98b76;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .feedback-stats strong {
+    font-family: "Playfair Display", serif;
+    font-size: 1.15rem;
+    color: var(--mocha);
+  }
+
+  .feedback-list-loading,
+  .feedback-list-error {
+    text-align: center;
+    margin: 0 0 1rem;
+    font-size: 0.95rem;
+  }
+
+  .feedback-list-loading {
+    color: var(--muted);
+  }
+
+  .feedback-list-error {
+    color: #a65d5d;
+  }
+
+  .feedback-list-loading[hidden],
+  .feedback-list-error[hidden] {
+    display: none;
   }
 
   .feedback-list-empty {

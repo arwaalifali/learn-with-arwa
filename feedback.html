@@ -113,7 +113,15 @@
           <div class="feedback-list-header fade-in-element">
             <h2 id="feedback-list-heading">Community Feedback</h2>
             <p>See what visitors are saying and what we should work on next.</p>
+            <div id="feedback-stats" class="feedback-stats" hidden>
+              <span class="feedback-stats-stars" aria-hidden="true">★</span>
+              <strong id="feedback-average">5.0</strong>
+              <span class="feedback-stats-label">average from <span id="feedback-count">0</span> reviews</span>
+            </div>
           </div>
+
+          <p id="feedback-list-loading" class="feedback-list-loading" hidden>Loading community feedback…</p>
+          <p id="feedback-list-error" class="feedback-list-error" hidden></p>
 
           <div id="feedback-list-empty" class="feedback-list-empty fade-in-element">
             <p>No feedback yet. Be the first to share your thoughts above!</p>
